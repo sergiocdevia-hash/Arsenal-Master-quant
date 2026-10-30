@@ -1,0 +1,2 @@
+ERROR: Failed login attempt from IP 192.168.1.99
+CRITICAL: SELECT * FROM users WHERE username = 'admin' UNION SELECT null, null--
