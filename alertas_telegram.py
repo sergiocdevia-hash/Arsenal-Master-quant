@@ -1,7 +1,7 @@
 import os
 import requests
 
-TOKEN_TELEGRAM = "8996634873:AAFKF-Buc-iZB1unjDCEOXOMjn4L_tSy2xU"
+TOKEN_TELEGRAM = "9254580288:AAHHJNrOghUXXuAxmoEWACRzLSWidKhasJA"
 CHAT_ID_DESTINO = "8802485032"
 
 def enviar_alerta_telegram(mensaje):
