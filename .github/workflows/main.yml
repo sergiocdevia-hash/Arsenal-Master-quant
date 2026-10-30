@@ -1,0 +1,34 @@
+name: Motor Arsenal Flashscore Diario
+
+on:
+  schedule:
+    - cron: '0 4 * * *' 
+  workflow_dispatch:    
+
+jobs:
+  procesar_datos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar codigo de GitHub
+        uses: actions/checkout@v4
+
+      - name: Configurar Python del Servidor
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Instalar Librerias Necesarias
+        run: pip install requests
+
+      - name: Conectar API y Procesar Predicciones Arsenal
+        env:
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+        run: python motor_api_real.py
+
+      - name: Actualizar Panel de la Web Sin Repetidos
+        run: |
+          git config --global user.name "Arsenal Cloud Bot"
+          git config --global user.email "bot@arsenalmaster.com"
+          git add partidos_hoy.json
+          git commit -m "Cartelera limpia del dia: $(date +'%Y-%m-%d')" || exit 0
+          git push
