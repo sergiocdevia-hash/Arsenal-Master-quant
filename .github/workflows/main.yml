@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Descargar codigo de GitHub
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - name: Configurar Python del Servidor
         uses: actions/setup-python@v5
@@ -30,11 +32,9 @@ jobs:
         run: python motor_api_real.py
 
       - name: Actualizar Panel de la Web Sin Repetidos
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config --global user.name "Arsenal Cloud Bot"
-          git config --global user.email "bot@arsenalmaster.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@://github.com"
           git add partidos_hoy.json
           git commit -m "Cartelera limpia del dia: $(date +'%Y-%m-%d')" || exit 0
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@://github.com{{ github.repository }}.git HEAD:main
+          git push origin main
