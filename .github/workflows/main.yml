@@ -37,4 +37,4 @@ jobs:
           git config --global user.email "bot@arsenalmaster.com"
           git add partidos_hoy.json
           git commit -m "Cartelera limpia del dia: $(date +'%Y-%m-%d')" || exit 0
-          git push origin HEAD:main
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@://github.com{{ github.repository }}.git HEAD:main
