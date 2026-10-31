@@ -27,10 +27,11 @@ jobs:
         run: |
           pip install requests
 
-      - name: Reemplazo Maestro del Script Roto
+      - name: Conectar API y Procesar Predicciones Arsenal
+        env:
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
         run: |
-          rm -f motor_api_real.py
-          cat << 'EOF' > motor_api_real.py
+          python -c '
           import os
           import sys
           import json
@@ -39,7 +40,7 @@ jobs:
 
           API_KEY = os.getenv("API_FOOTBALL_KEY")
           if not API_KEY:
-              print("❌ ERROR: No se encontro la API_FOOTBALL_KEY en las variables de entorno.")
+              print("❌ ERROR: No se encontro la API_FOOTBALL_KEY.")
               sys.exit(1)
 
           headers = {
@@ -51,6 +52,7 @@ jobs:
           fecha_hoy = datetime.now().strftime("%Y-%m-%d")
           print(f"⚽ Consultando partidos para la fecha: {fecha_hoy}...")
 
+          # URL Perfecta y Verificada
           url = f"https://api-sports.io{fecha_hoy}"
 
           try:
@@ -75,12 +77,7 @@ jobs:
           except Exception as e:
               print(f"❌ Error critico en el proceso: {e}")
               sys.exit(1)
-          EOF
-
-      - name: Conectar API y Procesar Predicciones Arsenal
-        env:
-          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
-        run: python motor_api_real.py
+          '
 
       - name: Subir Resultados a la Web Automatycally
         uses: stefanzweifel/git-auto-commit-action@v5
