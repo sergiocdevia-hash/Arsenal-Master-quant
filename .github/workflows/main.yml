@@ -8,6 +8,8 @@ on:
 jobs:
   procesar_datos:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Descargar codigo de GitHub
         uses: actions/checkout@v4
