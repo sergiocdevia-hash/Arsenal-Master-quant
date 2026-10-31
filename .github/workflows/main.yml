@@ -1,75 +1,38 @@
-import os
-import requests
-import json
-from datetime import datetime
+name: Motor Arsenal Flashscore Diario
 
-fecha_hoy = datetime.now().strftime("%Y-%m-%d")
-API_KEY = os.getenv("API_FOOTBALL_KEY")
+on:
+  schedule:
+    - cron: '20 5 * * *'
+  workflow_dispatch:
 
-# CONFIGURACIÓN PROFESIONAL EXCLUSIVA PARA TU PANEL API-SPORTS DIRECTO
-URL = "https://api-sports.io"
-QUERYSTRING = {"date": fecha_hoy}
+jobs:
+  procesar_datos:
+    runs-on: ubuntu-latest
 
-HEADERS = {
-    "x-apisports-key": API_KEY
-}
+    permissions:
+      contents: write
 
-def procesar_jornada_limpia():
-    print(f"Consultando la API directa de API-SPORTS para la fecha: {fecha_hoy}...")
-    try:
-        response = requests.get(URL, headers=HEADERS, params=QUERYSTRING, timeout=15)
-        
-        print(f"Código de respuesta del servidor: {response.status_code}")
-        if response.status_code != 200:
-            print(f"Error en servidor. Detalles: {response.text}")
-            return
+    steps:
+      - name: Descargar codigo de GitHub
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.LLAVE_ACCESO }}
 
-        datos_api = response.json()
-        
-        # Verificar si el servidor devolvió un error de autenticación dentro del JSON
-        if "errors" in datos_api and datos_api["errors"]:
-            print(f"Error de credenciales devuelto por API-SPORTS: {datos_api['errors']}")
-            return
+      - name: Configurar Python del Servidor
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-        partidos_recibidos = datos_api.get("response", [])
-        
-        if not partidos_recibidos:
-            print("No se encontraron partidos para el día de hoy en la API.")
-            return
-            
-        ligas_agrupadas = {}
+      - name: Instalar Librerias Necesarias
+        run: pip install requests
 
-        for item in partidos_recibidos:
-            league_info = item.get("league", {})
-            teams_info = item.get("teams", {})
-            
-            nombre_liga = f"{league_info.get('country', 'Desconocido')} - {league_info.get('name', 'Liga')}"
-            eq_local = teams_info.get("home", {}).get("name", "Local")
-            eq_vis = teams_info.get("away", {}).get("name", "Visitante")
-            
-            partido_formateado = {
-                "local": eq_local,
-                "visitante": eq_vis,
-                "prediccion": "COBERTURA TOTAL LOCAL",
-                "cuota": "1.80",
-                "stake": "1.25",
-                "xg_l": "1.50",
-                "xg_v": "1.10",
-                "veredicto": "MERCADO ESTABLE",
-                "prob_bayesiana": "L: 55% | E: 20%"
-            }
+      - name: Conectar API y Procesar Predicciones Arsenal
+        env:
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+        run: python motor_api_real.py
 
-            if nombre_liga not in ligas_agrupadas:
-                ligas_agrupadas[nombre_liga] = []
-            ligas_agrupadas[nombre_liga].append(partido_formateado)
-
-        with open("partidos_hoy.json", "w", encoding="utf-8") as f:
-            json.dump(ligas_agrupadas, f, ensure_ascii=False, indent=4)
-            
-        print("¡Archivo de hoy generado con éxito!")
-
-    except Exception as e:
-        print(f"Error inesperado al procesar los datos: {e}")
-
-if __name__ == "__main__":
-    procesar_jornada_limpia()
+      - name: Subir Resultados a la Web Automatically
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Cartelera limpia del dia: ${{ github.event.repository.updated_at }}"
+          file_pattern: 'partidos_hoy.json'
