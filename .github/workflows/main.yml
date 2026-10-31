@@ -27,6 +27,12 @@ jobs:
         run: |
           pip install requests
 
+      - name: Corrección Maestra de URL en Script
+        run: |
+          # Este comando busca cualquier fragmento de texto roto en el script y lo repara automáticamente
+          sed -i 's|api-sports.io2026-10-31|v3.football.api-sports.io|g' motor_api_real.py
+          sed -i 's|api-sports.io|v3.football.api-sports.io|g' motor_api_real.py
+
       - name: Conectar API y Procesar Predicciones Arsenal
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
