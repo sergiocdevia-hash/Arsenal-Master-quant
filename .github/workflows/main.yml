@@ -2,7 +2,7 @@ name: Motor Arsenal Flashscore Diario
 
 on:
   schedule:
-    - cron: '0 5 * * *'
+    - cron: '20 5 * * *'
   workflow_dispatch:
 
 jobs:
