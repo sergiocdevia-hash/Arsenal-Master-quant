@@ -2,7 +2,7 @@ name: Motor Arsenal Flashscore Diario
 
 on:
   schedule:
-    - cron: '20 5 * * *'
+    - cron: '0 5 * * *'
   workflow_dispatch:
 
 jobs:
@@ -24,15 +24,16 @@ jobs:
           python-version: '3.10'
 
       - name: Instalar Librerias Necesarias
-        run: pip install requests
+        run: |
+          pip install requests
 
       - name: Conectar API y Procesar Predicciones Arsenal
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
         run: python motor_api_real.py
 
-      - name: Subir Resultados a la Web Automatically
+      - name: Subir Resultados a la Web Automatycally
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Cartelera limpia del dia: ${{ github.event.repository.updated_at }}"
-          file_pattern: 'partidos_hoy.json'
+          commit_message: "Cartelera limpia del dia"
+          file_pattern: '*'
