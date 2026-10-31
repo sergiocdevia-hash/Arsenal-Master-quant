@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Descargar codigo de GitHub
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.LLAVE_ACCESO }}
 
       - name: Configurar Python del Servidor
         uses: actions/setup-python@v5
@@ -29,12 +31,8 @@ jobs:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
         run: python motor_api_real.py
 
-      - name: Actualizar Panel de la Web Sin Repetidos
-        env:
-          GITHUB_TOKEN: ${{ secrets.LLAVE_ACCESO }}
-        run: |
-          git config --global user.name "Arsenal Cloud Bot"
-          git config --global user.email "bot@arsenalmaster.com"
-          git add partidos_hoy.json
-          git commit -m "Cartelera limpia del dia: $(date +'%Y-%m-%d')" || exit 0
-          git push https://x-access-token:${{ secrets.LLAVE_ACCESO }}@://github.com{{ github.repository }}.git HEAD:main
+      - name: Subir Resultados a la Web Automaticamente
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Cartelera limpia del dia: ${{ github.event.repository.updated_at }}"
+          file_pattern: 'partidos_hoy.json'
