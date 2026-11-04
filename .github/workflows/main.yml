@@ -2,15 +2,15 @@ name: Motor Arsenal Flashscore Diario
 
 on:
   schedule:
-    - cron: '0 5 * * *'
-  workflow_dispatch:
+    - cron: '0 5 * * *' # Se ejecuta todos los días a las 05:00 UTC
+  workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña Actions
 
 jobs:
   procesar_datos:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write
+      contents: write # Permite al flujo escribir y hacer push de archivos en el repositorio
 
     steps:
       - name: Descargar codigo de GitHub
@@ -25,7 +25,8 @@ jobs:
 
       - name: Instalar Librerias Necesarias
         run: |
-          pip install requests
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install requests; fi
 
       - name: Conectar API y Procesar Predicciones Arsenal
         env:
