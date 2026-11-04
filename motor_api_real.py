@@ -4,29 +4,29 @@ import json
 import requests
 from datetime import datetime
 
-# 1. Carga segura del Token
+# 1. Carga segura del Token desde los Secrets de GitHub
 API_KEY = os.getenv("API_FOOTBALL_KEY")
 if not API_KEY:
     print("❌ ERROR: No se encontró la API_FOOTBALL_KEY en los Secrets.")
     sys.exit(1)
 
-# 2. Cabeceras oficiales completas
+# 2. Cabeceras oficiales completas para API-Sports
 headers = {
     "x-rapidapi-key": API_KEY,
-    "x-apisports-key": API_KEY,
     "x-rapidapi-host": "v3.football.api-sports.io"
 }
 
-# 3. Fecha automática (Hoy)
+# 3. Fecha automatica del dia actual (Formato: AAAA-MM-DD)
 fecha_hoy = datetime.now().strftime("%Y-%m-%d")
 print(f"⚽ Consultando partidos para la fecha: {fecha_hoy}...")
 
-# 4. URL limpia y oficial (Sin concatenaciones rotas)
+# 4. URL corregida con endpoint oficial y parametro de fecha
 url = f"https://api-sports.io{fecha_hoy}"
 
 try:
+    # Realiza la peticion con un tiempo de espera limite de 15 segundos
     respuesta = requests.get(url, headers=headers, timeout=15)
-    print(f"🔹 Código de respuesta: {respuesta.status_code}")
+    print(f"🔹 Código de respuesta del servidor: {respuesta.status_code}")
     
     if respuesta.status_code != 200:
         print(f"❌ Error API: {respuesta.text}")
@@ -34,7 +34,7 @@ try:
         
     datos = respuesta.json()
     
-    # 5. Guardado en la carpeta de predicciones
+    # 5. Estructuracion y guardado del archivo de resultados
     carpeta_destino = "predicciones"
     os.makedirs(carpeta_destino, exist_ok=True)
     
@@ -42,7 +42,7 @@ try:
     with open(nombre_archivo, "w", encoding="utf-8") as archivo:
         json.dump(datos, archivo, indent=4, ensure_ascii=False)
         
-    print(f"✅ ¡Operación exitosa! Guardado en: {nombre_archivo}")
+    print(f"✅ ¡Operación exitosa! Archivo guardado en: {nombre_archivo}")
 
 except Exception as e:
     print(f"❌ Error crítico en el proceso: {e}")
