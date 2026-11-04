@@ -31,56 +31,10 @@ jobs:
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
         run: |
-          python -c '
-          import os
-          import sys
-          import json
-          import requests
-          from datetime import datetime
-
-          API_KEY = os.getenv("API_FOOTBALL_KEY")
-          if not API_KEY:
-              print("❌ ERROR: No se encontro la API_FOOTBALL_KEY.")
-              sys.exit(1)
-
-          headers = {
-              "x-rapidapi-key": API_KEY,
-              "x-apisports-key": API_KEY,
-              "x-rapidapi-host": "v3.football.api-sports.io"
-          }
-
-          fecha_hoy = datetime.now().strftime("%Y-%m-%d")
-          print(f"⚽ Consultando partidos para la fecha: {fecha_hoy}...")
-
-          # URL Perfecta y Verificada
-          url = f"https://api-sports.io{fecha_hoy}"
-
-          try:
-              respuesta = requests.get(url, headers=headers, timeout=15)
-              print(f"🔹 Codigo de respuesta del servidor: {respuesta.status_code}")
-              
-              if respuesta.status_code != 200:
-                  print(f"❌ Error del servidor de la API: {respuesta.text}")
-                  sys.exit(1)
-                  
-              datos = respuesta.json()
-              
-              carpeta_destino = "predicciones"
-              os.makedirs(carpeta_destino, exist_ok=True)
-              
-              nombre_archivo = os.path.join(carpeta_destino, f"partidos_{fecha_hoy}.json")
-              with open(nombre_archivo, "w", encoding="utf-8") as archivo:
-                  json.dump(datos, archivo, indent=4, ensure_ascii=False)
-                  
-              print(f"✅ ¡Operacion exitosa! Archivo guardado correctamente en: {nombre_archivo}")
-
-          except Exception as e:
-              print(f"❌ Error critico en el proceso: {e}")
-              sys.exit(1)
-          '
+          python motor_api_real.py
 
       - name: Subir Resultados a la Web Automatycally
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Cartelera limpia del dia"
-          file_pattern: '*'
+          file_pattern: 'predicciones/*'
