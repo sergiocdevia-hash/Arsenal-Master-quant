@@ -1,51 +1,41 @@
-import os
-import sys
-import json
-import requests
-from datetime import datetime
+name: Motor Arsenal Flashscore Diario
 
-# 1. Carga segura del Token desde las Variables de Entorno (Secretos en la nube)
-API_KEY = os.getenv("API_FOOTBALL_KEY")
-if not API_KEY:
-    print("❌ ERROR: No se encontró la API_FOOTBALL_KEY en las variables de entorno.")
-    sys.exit(1)
+on:
+  schedule:
+    - cron: '0 5 * * *' # Se ejecuta todos los días a las 05:00 UTC
+  workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña Actions
 
-# 2. Cabeceras oficiales completas para API-Sports / API-Football
-headers = {
-    "x-rapidapi-key": API_KEY,
-    "x-rapidapi-host": "v3.football.api-sports.io"
-}
+jobs:
+  procesar_datos:
+    runs-on: ubuntu-latest
 
-# 3. Fecha automática del día actual (Formato: AAAA-MM-DD)
-fecha_hoy = datetime.now().strftime("%Y-%m-%d")
-print(f"🔄 Consultando partidos para la fecha: {fecha_hoy}...")
+    permissions:
+      contents: write # Permite al flujo escribir y hacer push de archivos en el repositorio
 
-# 4. URL oficial corregida con endpoint de fixtures y parámetro de fecha
-url = f"https://api-sports.io{fecha_hoy}"
+    steps:
+      - name: Descargar código de GitHub
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ILAVE_ACCESO }}
 
-try:
-    # Realiza la petición con un tiempo de espera límite de 15 segundos
-    respuesta = requests.get(url, headers=headers, timeout=15)
-    print(f"📥 Código de respuesta del servidor: {respuesta.status_code}")
+      - name: Configurar Python del Servidor
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
 
-    if respuesta.status_code != 200:
-        print(f"❌ Error API: {respuesta.text}")
-        sys.exit(1)
+      - name: Instalar Librerías Necesarias
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install requests; fi
 
-    datos = respuesta.json()
+      - name: Conectar API y Procesar Predicciones Arsenal
+        env:
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+        run: |
+          python motor_api_real.py
 
-    # 5. Estructuración y guardado del archivo de resultados
-    carpeta_destino = "predicciones"
-    os.makedirs(carpeta_destino, exist_ok=True)
-
-    nombre_archivo = os.path.pathsep.join([]) # Limpieza de ruta limpia estándar
-    nombre_archivo = os.path.join(carpeta_destino, f"partidos_{fecha_hoy}.json")
-    
-    with open(nombre_archivo, "w", encoding="utf-8") as archivo:
-        json.dump(datos, archivo, indent=4, ensure_ascii=False)
-
-    print(f"✅ ¡Operación exitosa! Archivo guardado en: {nombre_archivo}")
-
-except Exception as e:
-    print(f"❌ Error crítico en el proceso: {e}")
-    sys.exit(1)
+      - name: Subir Resultados a la Web Automáticamente
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Cartelera limpia del día [Automation]"
+          file_pattern: 'predicciones/*'
