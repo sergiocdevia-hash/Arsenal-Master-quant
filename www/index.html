@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARSENAL MASTER QUANT V12.0 - PREMIUM</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+    body { background-color: #070d14; color: #e2e8f0; padding: 14px; max-width: 600px; margin: 0 auto; }
+    .header { text-align: center; padding: 16px 10px; border-bottom: 1px solid #133b4a; margin-bottom: 16px; }
+    .header h1 { color: #00f0c8; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; }
+    .header p { color: #94a3b8; font-size: 12px; margin-top: 6px; }
+    .liga-btn {
+      width: 100%; background: #0c1724; border: 1px solid #00c8a8; border-radius: 8px;
+      padding: 14px 16px; margin-bottom: 10px; display: flex; justify-content: space-between;
+      align-items: center; cursor: pointer; color: #00f0c8; font-weight: 700; font-size: 13px;
+    }
+    .liga-btn span.count { color: #00f0c8; }
+    .partidos-box { display: none; margin-bottom: 16px; }
+    .partidos-box.open { display: block; }
+    .card {
+      background: #0d1926; border: 1px solid #163245; border-radius: 10px;
+      padding: 14px; margin-bottom: 12px;
+    }
+    .match-title {
+      color: #38bdf8; font-weight: 700; font-size: 15px; border-left: 3px solid #00f0c8;
+      padding-left: 8px; margin-bottom: 12px; display: flex; justify-content: space-between;
+    }
+    .match-time { color: #94a3b8; font-size: 12px; font-weight: 400; }
+    .row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; font-size: 12.5px; gap: 10px; }
+    .label { color: #94a3b8; flex: 1; }
+    .val { font-weight: 700; text-align: right; flex: 1.2; }
+    .cyan { color: #00f0c8; }
+    .white { color: #ffffff; }
+    .gold { color: #facc15; }
+    .red { color: #f87171; }
+    .loading { text-align: center; color: #00f0c8; padding: 40px 10px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>ARSENAL MASTER QUANT V12.0 - PREMIUM</h1>
+    <p id="subtitulo">Cargando cartelera cuántica en vivo...</p>
+  </div>
+  <div id="contenedor" class="loading">Sincronizando motores...</div>
+
+  <script>
+    async function cargarCartelera() {
+      try {
+        const res = await fetch('data/partidos_del_dia.json?v=' + Date.now());
+        const data = await res.json();
+        const cont = document.getElementById('contenedor');
+        cont.className = '';
+        cont.innerHTML = '';
+
+        const ligas = Object.keys(data);
+        let total = 0;
+
+        ligas.forEach((liga, idx) => {
+          const partidos = data[liga];
+          total += partidos.length;
+
+          const btn = document.createElement('button');
+          btn.className = 'liga-btn';
+          btn.innerHTML = `<span>${liga}</span><span class="count">[ ${partidos.length} PARTIDOS ]</span>`;
+
+          const box = document.createElement('div');
+          box.className = 'partidos-box';
+          if (idx === 0) box.classList.add('open');
+
+          btn.onclick = () => box.classList.toggle('open');
+
+          partidos.forEach(p => {
+            const veredictoColor = p.veredicto_mercado.includes('TRAMPA') ? 'red' : 'cyan';
+            box.innerHTML += `
+              <div class="card">
+                <div class="match-title">
+                  <span>| ${p.local} VS ${p.visitante}</span>
+                  <span class="match-time">${p.hora} COL</span>
+                </div>
+                <div class="row"><span class="label">📋 PREDICCIÓN ARSENAL:</span><span class="val cyan">${p.prediccion}</span></div>
+                <div class="row"><span class="label">💰 CUOTA REAL MULTIBARRIDO:</span><span class="val white">${Number(p.cuota_multibarrido).toFixed(2)}</span></div>
+                <div class="row"><span class="label">🎯 CONTROL DE GOLES:</span><span class="val white">${p.control_goles}</span></div>
+                <div class="row"><span class="label">⏳ TIEMPO CONTINUO:</span><span class="val white">${p.tiempo_continuo}</span></div>
+                <div class="row"><span class="label">💥 SIMULACIÓN SHOCK:</span><span class="val white">${p.simulacion_shock}</span></div>
+                <div class="row"><span class="label">💵 GESTIÓN DE CAPITAL:</span><span class="val gold">Stake Kelly: ${p.stake_kelly}</span></div>
+                <div class="row"><span class="label">📊 MÉTRICAS COMBINADAS:</span><span class="val white">xG L: ${p.xg_l} - xG V: ${p.xg_v}</span></div>
+                <div class="row"><span class="label">⚖️ VEREDICTO DE MERCADO:</span><span class="val ${veredictoColor}">${p.veredicto_mercado}</span></div>
+                <div class="row"><span class="label">⚡ CONTEXTO VIVO:</span><span class="val cyan">${p.contexto_vivo}</span></div>
+                <div class="row"><span class="label">🧠 PROBABILIDAD BAYESIANA:</span><span class="val white">L: ${p.prob_1} | E: ${p.prob_e} | BTTS: ${p.btts}</span></div>
+              </div>
+            `;
+          });
+
+          cont.appendChild(btn);
+          cont.appendChild(box);
+        });
+
+        document.getElementById('subtitulo').innerText = `${ligas.length} Ligas Activas • ${total} Partidos Analizados`;
+      } catch (e) {
+        document.getElementById('contenedor').innerText = 'Error cargando los partidos del día.';
+      }
+    }
+    cargarCartelera();
+  </script>
+</body>
+</html>
