@@ -2,16 +2,17 @@ import os
 import sys
 import json
 import math
-import time
 import hashlib
 import requests
 from datetime import datetime, timedelta
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+DOMINIO_WEB = "sergiocdevia-hash.github.io"
+URL_WEB_VIP = "https://" + DOMINIO_WEB + "/Arsenal-Master-quant/www/"
 
 if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-    print("ERROR: Faltan TELEGRAM_TOKEN o TELEGRAM_CHAT_ID")
+    print("ERROR: Faltan credenciales de Telegram")
     sys.exit(1)
 
 def ajuste_dixon_coles(goles_l, goles_v, lambda_l, lambda_v, rho=-0.075):
@@ -40,9 +41,7 @@ def estimar_xg_equipos(id_partido, local, visitante):
     h = hashlib.md5(semilla).hexdigest()
     val_l = int(h[:4], 16) % 145
     val_v = int(h[4:8], 16) % 135
-    xg_l = round(0.75 + (val_l / 100.0), 2)
-    xg_v = round(0.65 + (val_v / 100.0), 2)
-    return xg_l, xg_v
+    return round(0.75 + (val_l / 100.0), 2), round(0.65 + (val_v / 100.0), 2)
 
 def analizar_partido_v12(item):
     fixture = item.get("fixture", {})
@@ -65,25 +64,19 @@ def analizar_partido_v12(item):
 
     lambda_l, lambda_v = estimar_xg_equipos(id_partido, local, visitante)
     rho = -0.075
-
-    prob_local = 0.0
-    prob_empate = 0.0
-    prob_visita = 0.0
-    prob_btts = 0.0
+    prob_local = prob_empate = prob_visita = prob_btts = 0.0
 
     for x in range(6):
         for y in range(6):
             p_x = (math.exp(-lambda_l) * (lambda_l ** x)) / math.factorial(x)
             p_y = (math.exp(-lambda_v) * (lambda_v ** y)) / math.factorial(y)
             prob_final = (p_x * p_y) * ajuste_dixon_coles(x, y, lambda_l, lambda_v, rho)
-
             if x > y:
                 prob_local += prob_final
             elif x < y:
                 prob_visita += prob_final
             else:
                 prob_empate += prob_final
-
             if x >= 1 and y >= 1:
                 prob_btts += prob_final
 
@@ -94,21 +87,16 @@ def analizar_partido_v12(item):
         prob_visita /= total_p
 
     if prob_local >= 0.56:
-        prediccion = "[GANADOR DIRECTO LOCAL]"
-        prob_pick = prob_local
+        prediccion, prob_pick = "[GANADOR DIRECTO LOCAL]", prob_local
     elif prob_visita >= 0.54:
-        prediccion = "[GANADOR DIRECTO VISITANTE]"
-        prob_pick = prob_visita
+        prediccion, prob_pick = "[GANADOR DIRECTO VISITANTE]", prob_visita
     elif prob_local >= prob_visita:
         if prob_btts >= 0.54:
-            prediccion = "[LOCAL O EMPATE AMBOS MARCAN]"
-            prob_pick = (prob_local + prob_empate) * 0.72
+            prediccion, prob_pick = "[LOCAL O EMPATE AMBOS MARCAN]", (prob_local + prob_empate) * 0.72
         else:
-            prediccion = "[COBERTURA: LOCAL O EMPATE]"
-            prob_pick = prob_local + prob_empate
+            prediccion, prob_pick = "[COBERTURA: LOCAL O EMPATE]", prob_local + prob_empate
     else:
-        prediccion = "[COBERTURA: EMPATE O VISITANTE]"
-        prob_pick = prob_visita + prob_empate
+        prediccion, prob_pick = "[COBERTURA: EMPATE O VISITANTE]", prob_visita + prob_empate
 
     cuota_multibarrido = round(1 / prob_pick, 2) if prob_pick > 0 else 1.85
     stake_kelly = calcular_kelly(prob_pick, cuota_multibarrido)
@@ -122,7 +110,6 @@ def analizar_partido_v12(item):
 
     return {
         "liga_completa": f"{liga} ({pais})" if pais else liga,
-        "liga": liga,
         "hora": hora_col,
         "local": local,
         "visitante": visitante,
@@ -141,104 +128,65 @@ def analizar_partido_v12(item):
         "btts": f"{prob_btts * 100:.1f}%"
     }
 
-def enviar_telegram(texto):
-    host = "api.telegram.org"
-    ruta = f"/bot{TELEGRAM_TOKEN}/sendMessage"
-    url_final = "https://" + host + ruta
-    payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
-        "text": texto,
-        "parse_mode": "Markdown"
-    }
-    resp = requests.post(url_final, json=payload, timeout=15)
-    if resp.status_code == 429:
-        espera = resp.json().get("parameters", {}).get("retry_after", 5)
-        time.sleep(espera + 1)
-        resp = requests.post(url_final, json=payload, timeout=15)
-    if resp.status_code != 200:
-        print(f"ERROR Telegram ({resp.status_code}): {resp.text}")
-        sys.exit(1)
-
-def formatear_tarjeta(t):
-    return (
-        f"┃ *{t['local']} VS {t['visitante']}* ⏰ `{t['hora']} COL`\n"
-        f"📋 *PREDICCIÓN ARSENAL:* `{t['prediccion']}`\n"
-        f"💰 *CUOTA REAL MULTIBARRIDO:* `{t['cuota_multibarrido']:.2f}`\n"
-        f"🎯 *CONTROL DE GOLES:* {t['control_goles']}\n"
-        f"⏳ *TIEMPO CONTINUO:* {t['tiempo_continuo']}\n"
-        f"💥 *SIMULACIÓN SHOCK:* {t['simulacion_shock']}\n"
-        f"💵 *GESTIÓN DE CAPITAL:* `Stake Kelly: {t['stake_kelly']}`\n"
-        f"📊 *MÉTRICAS COMBINADAS:* `xG L: {t['xg_l']} - xG V: {t['xg_v']}`\n"
-        f"⚖️ *VEREDICTO DE MERCADO:* `{t['veredicto_mercado']}`\n"
-        f"⚡ *CONTEXTO VIVO:* `{t['contexto_vivo']}`\n"
-        f"🧠 *PROBABILIDAD BAYESIANA:* 🏠 L: `{t['prob_1']}` | 🤝 E: `{t['prob_e']}` | ⚽ BTTS: `{t['btts']}`\n"
-        f"━━━━━━━━━━━━━━━━━━━━"
-    )
-
 def ejecutar_sistema():
     fecha_hoy = datetime.now().strftime("%Y-%m-%d")
     archivo_partidos = os.path.join("predicciones", f"partidos_{fecha_hoy}.json")
 
     if not os.path.exists(archivo_partidos):
-        print(f"ERROR: No existe {archivo_partidos}")
         sys.exit(1)
 
     with open(archivo_partidos, "r", encoding="utf-8") as f:
         datos = json.load(f)
 
     lista_api = datos.get("response", [])
-    if not lista_api:
-        print("AVISO: No hay partidos hoy.")
-        return
-
     bloque_ligas = {}
-    total_analizados = 0
+    top_picks = []
 
     for item in lista_api:
         tarjeta = analizar_partido_v12(item)
         liga_key = tarjeta["liga_completa"]
-        if liga_key not in bloque_ligas:
-            bloque_ligas[liga_key] = []
-        bloque_ligas[liga_key].append(tarjeta)
-        total_analizados += 1
+        bloque_ligas.setdefault(liga_key, []).append(tarjeta)
+        if tarjeta["veredicto_mercado"] == "[MERCADO ESTABLE]" and len(top_picks) < 5:
+            top_picks.append(tarjeta)
 
     os.makedirs("www/data", exist_ok=True)
     with open("www/data/partidos_del_dia.json", "w", encoding="utf-8") as f_web:
         json.dump(bloque_ligas, f_web, ensure_ascii=False, indent=4)
 
-    encabezado = (
-        f"🌌 *ARSENAL MASTER QUANT V12.0 - PREMIUM* 🌌\n"
-        f"🔥 *FLASH FÚTBOL VIP - CARTELERA COMPLETA* ⚽\n"
-        f"📅 *Fecha:* `{fecha_hoy}` | 🌐 *Ligas:* `{len(bloque_ligas)}`\n"
-        f"📊 *Total partidos procesados:* `{total_analizados}`\n"
-        f"━━━━━━━━━━━━━━━━━━━━"
+    resumen_top = "\n".join(
+        [f"⚽ *{p['local']} vs {p['visitante']}* (`{p['hora']} COL`)\n   └ 🎯 `{p['prediccion']}` | Cuota: `{p['cuota_multibarrido']}`" for p in top_picks]
     )
-    enviar_telegram(encabezado)
-    time.sleep(1.5)
 
-    buffer_mensaje = ""
-    for liga_nombre, partidos in bloque_ligas.items():
-        cabecera_liga = f"\n🏆 *{liga_nombre}* `[ {len(partidos)} PARTIDOS ]`\n━━━━━━━━━━━━━━━━━━━━\n"
-        if len(buffer_mensaje) + len(cabecera_liga) > 3500:
-            enviar_telegram(buffer_mensaje)
-            time.sleep(1.5)
-            buffer_mensaje = ""
-        buffer_mensaje += cabecera_liga
+    mensaje = (
+        f"🌌 *ARSENAL MASTER QUANT V12.0 - PREMIUM* 🌌\n"
+        f"📅 *Cartelera Oficial:* `{fecha_hoy}`\n"
+        f"📊 *Total:* `{len(lista_api)} Partidos` en `{len(bloque_ligas)} Ligas`\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"🔥 *TOP 5 SELECCIONES [MERCADO ESTABLE]:*\n\n"
+        f"{resumen_top}\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"📲 *Abre el panel completo con todos los partidos desplegables aquí abajo:* 👇"
+    )
 
-        for tarjeta in partidos:
-            texto_tarjeta = formatear_tarjeta(tarjeta) + "\n"
-            if len(buffer_mensaje) + len(texto_tarjeta) > 3800:
-                enviar_telegram(buffer_mensaje)
-                time.sleep(1.5)
-                buffer_mensaje = f"🏆 *{liga_nombre} (Cont.)*\n━━━━━━━━━━━━━━━━━━━━\n" + texto_tarjeta
-            else:
-                buffer_mensaje += texto_tarjeta
+    host = "api.telegram.org"
+    url_final = "https://" + host + f"/bot{TELEGRAM_TOKEN}/sendMessage"
+    payload = {
+        "chat_id": TELEGRAM_CHAT_ID,
+        "text": mensaje,
+        "parse_mode": "Markdown",
+        "reply_markup": {
+            "inline_keyboard": [[
+                {"text": "🚀 ABRIR CARTELERA COMPLETA V12.0", "url": URL_WEB_VIP}
+            ]]
+        }
+    }
 
-    if buffer_mensaje.strip():
-        buffer_mensaje += "\n🚀 *FIN DE CARTELERA CUÁNTICA V12.0 - ¡VAMOS POR EL VERDE!* 💸"
-        enviar_telegram(buffer_mensaje)
+    resp = requests.post(url_final, json=payload, timeout=15)
+    if resp.status_code != 200:
+        print(f"ERROR Telegram: {resp.text}")
+        sys.exit(1)
 
-    print(f"EXITO: Se publicaron {total_analizados} partidos en Flash futbol VIP.")
+    print("EXITO: Panel V12.0 actualizado y boton publicado en Telegram.")
 
 if __name__ == "__main__":
     ejecutar_sistema()
