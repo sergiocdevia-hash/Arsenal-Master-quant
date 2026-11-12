@@ -369,7 +369,7 @@
                 "timestamp": 1794452400,
                 "periods": {
                     "first": 1794452400,
-                    "second": null
+                    "second": 1794456000
                 },
                 "venue": {
                     "id": null,
@@ -377,9 +377,9 @@
                     "city": "Pachuca de Soto"
                 },
                 "status": {
-                    "long": "Halftime",
-                    "short": "HT",
-                    "elapsed": 45,
+                    "long": "Match Finished",
+                    "short": "FT",
+                    "elapsed": 90,
                     "extra": null
                 }
             },
@@ -417,8 +417,8 @@
                     "away": 1
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 1
                 },
                 "extratime": {
                     "home": null,
