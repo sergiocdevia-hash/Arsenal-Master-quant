@@ -26,14 +26,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: Conectar API y Procesar Predicciones Arsenal
+      - name: 1. Descargar Partidos Reales API
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
         run: |
           python motor_api_real.py
 
-      - name: Subir Resultados a la Web Automaticamente
+      - name: 2. Analizar y Publicar en Telegram
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python bot_cuantico_profesional.py
+
+      - name: 3. Guardar Historial en GitHub
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "Cartelera limpia del dia [Automation]"
+          commit_message: "Cartelera y alerta Telegram [Automation]"
           file_pattern: 'predicciones/*'
