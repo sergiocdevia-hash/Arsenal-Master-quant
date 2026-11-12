@@ -19,7 +19,7 @@
                 "timestamp": 1794441600,
                 "periods": {
                     "first": 1794441600,
-                    "second": null
+                    "second": 1794445200
                 },
                 "venue": {
                     "id": null,
@@ -27,10 +27,10 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Halftime",
-                    "short": "HT",
-                    "elapsed": 45,
-                    "extra": 3
+                    "long": "Second Half",
+                    "short": "2H",
+                    "elapsed": 90,
+                    "extra": 1
                 }
             },
             "league": {
@@ -58,7 +58,7 @@
                 }
             },
             "goals": {
-                "home": 3,
+                "home": 4,
                 "away": 0
             },
             "score": {
@@ -92,15 +92,15 @@
                     "second": null
                 },
                 "venue": {
-                    "id": null,
-                    "name": null,
+                    "id": 3286,
+                    "name": "Estadio Oscar Quiteno",
                     "city": "Santa Ana"
                 },
                 "status": {
                     "long": "First Half",
                     "short": "1H",
-                    "elapsed": 6,
-                    "extra": null
+                    "elapsed": 45,
+                    "extra": 1
                 }
             },
             "league": {
@@ -128,13 +128,13 @@
                 }
             },
             "goals": {
-                "home": 1,
-                "away": 0
+                "home": 2,
+                "away": 1
             },
             "score": {
                 "halftime": {
-                    "home": 1,
-                    "away": 0
+                    "home": 2,
+                    "away": 1
                 },
                 "fulltime": {
                     "home": null,
@@ -167,9 +167,9 @@
                     "city": "Mexico City"
                 },
                 "status": {
-                    "long": "First Half",
-                    "short": "1H",
-                    "elapsed": 7,
+                    "long": "Halftime",
+                    "short": "HT",
+                    "elapsed": 45,
                     "extra": null
                 }
             },
@@ -228,7 +228,7 @@
                 "date": "2026-11-12T01:10:00+00:00",
                 "timestamp": 1794445800,
                 "periods": {
-                    "first": null,
+                    "first": 1794445800,
                     "second": null
                 },
                 "venue": {
@@ -237,9 +237,9 @@
                     "city": "Armenia"
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "Halftime",
+                    "short": "HT",
+                    "elapsed": 45,
                     "extra": null
                 }
             },
@@ -268,13 +268,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -754,6 +754,76 @@
                     "id": 14375,
                     "name": "Gyeongju W",
                     "logo": "https://media.api-sports.io/football/teams/14375.png",
+                    "winner": null
+                }
+            },
+            "goals": {
+                "home": null,
+                "away": null
+            },
+            "score": {
+                "halftime": {
+                    "home": null,
+                    "away": null
+                },
+                "fulltime": {
+                    "home": null,
+                    "away": null
+                },
+                "extratime": {
+                    "home": null,
+                    "away": null
+                },
+                "penalty": {
+                    "home": null,
+                    "away": null
+                }
+            }
+        },
+        {
+            "fixture": {
+                "id": 1644894,
+                "referee": null,
+                "timezone": "UTC",
+                "date": "2026-11-12T11:00:00+00:00",
+                "timestamp": 1794481200,
+                "periods": {
+                    "first": null,
+                    "second": null
+                },
+                "venue": {
+                    "id": null,
+                    "name": null,
+                    "city": null
+                },
+                "status": {
+                    "long": "Not Started",
+                    "short": "NS",
+                    "elapsed": null,
+                    "extra": null
+                }
+            },
+            "league": {
+                "id": 424,
+                "name": "Ligue 1",
+                "country": "Congo-DR",
+                "logo": "https://media.api-sports.io/football/leagues/424.png",
+                "flag": "https://media.api-sports.io/flags/cg.svg",
+                "season": 2026,
+                "round": "Regular Season - 5",
+                "standings": true
+            },
+            "teams": {
+                "home": {
+                    "id": 21622,
+                    "name": "Tanganyika",
+                    "logo": "https://media.api-sports.io/football/teams/21622.png",
+                    "winner": null
+                },
+                "away": {
+                    "id": 26887,
+                    "name": "AS New Soger",
+                    "logo": "https://media.api-sports.io/football/teams/26887.png",
                     "winner": null
                 }
             },
@@ -6074,76 +6144,6 @@
                     "id": 3443,
                     "name": "Portmore United",
                     "logo": "https://media.api-sports.io/football/teams/3443.png",
-                    "winner": null
-                }
-            },
-            "goals": {
-                "home": null,
-                "away": null
-            },
-            "score": {
-                "halftime": {
-                    "home": null,
-                    "away": null
-                },
-                "fulltime": {
-                    "home": null,
-                    "away": null
-                },
-                "extratime": {
-                    "home": null,
-                    "away": null
-                },
-                "penalty": {
-                    "home": null,
-                    "away": null
-                }
-            }
-        },
-        {
-            "fixture": {
-                "id": 1549864,
-                "referee": null,
-                "timezone": "UTC",
-                "date": "2026-11-12T21:00:00+00:00",
-                "timestamp": 1794517200,
-                "periods": {
-                    "first": null,
-                    "second": null
-                },
-                "venue": {
-                    "id": null,
-                    "name": "Estadio Atanasio Girardot",
-                    "city": null
-                },
-                "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
-                    "extra": null
-                }
-            },
-            "league": {
-                "id": 239,
-                "name": "Primera A",
-                "country": "Colombia",
-                "logo": "https://media.api-sports.io/football/leagues/239.png",
-                "flag": "https://media.api-sports.io/flags/co.svg",
-                "season": 2026,
-                "round": "Clausura - 19",
-                "standings": true
-            },
-            "teams": {
-                "home": {
-                    "id": 1137,
-                    "name": "Atletico Nacional",
-                    "logo": "https://media.api-sports.io/football/teams/1137.png",
-                    "winner": null
-                },
-                "away": {
-                    "id": 1136,
-                    "name": "Once Caldas",
-                    "logo": "https://media.api-sports.io/football/teams/1136.png",
                     "winner": null
                 }
             },
