@@ -27,10 +27,10 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Second Half",
-                    "short": "2H",
+                    "long": "Match Finished",
+                    "short": "FT",
                     "elapsed": 90,
-                    "extra": 1
+                    "extra": 3
                 }
             },
             "league": {
@@ -67,8 +67,8 @@
                     "away": 0
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 4,
+                    "away": 0
                 },
                 "extratime": {
                     "home": null,
@@ -89,7 +89,7 @@
                 "timestamp": 1794445200,
                 "periods": {
                     "first": 1794445200,
-                    "second": null
+                    "second": 1794448800
                 },
                 "venue": {
                     "id": 3286,
@@ -97,10 +97,10 @@
                     "city": "Santa Ana"
                 },
                 "status": {
-                    "long": "First Half",
-                    "short": "1H",
-                    "elapsed": 45,
-                    "extra": 1
+                    "long": "Second Half",
+                    "short": "2H",
+                    "elapsed": 52,
+                    "extra": null
                 }
             },
             "league": {
@@ -159,7 +159,7 @@
                 "timestamp": 1794445200,
                 "periods": {
                     "first": 1794445200,
-                    "second": null
+                    "second": 1794448800
                 },
                 "venue": {
                     "id": 22432,
@@ -167,9 +167,9 @@
                     "city": "Mexico City"
                 },
                 "status": {
-                    "long": "Halftime",
-                    "short": "HT",
-                    "elapsed": 45,
+                    "long": "Second Half",
+                    "short": "2H",
+                    "elapsed": 51,
                     "extra": null
                 }
             },
@@ -198,7 +198,7 @@
                 }
             },
             "goals": {
-                "home": 1,
+                "home": 2,
                 "away": 0
             },
             "score": {
@@ -229,7 +229,7 @@
                 "timestamp": 1794445800,
                 "periods": {
                     "first": 1794445800,
-                    "second": null
+                    "second": 1794449400
                 },
                 "venue": {
                     "id": 374,
@@ -237,9 +237,9 @@
                     "city": "Armenia"
                 },
                 "status": {
-                    "long": "Halftime",
-                    "short": "HT",
-                    "elapsed": 45,
+                    "long": "Second Half",
+                    "short": "2H",
+                    "elapsed": 48,
                     "extra": null
                 }
             },
@@ -258,17 +258,17 @@
                     "id": 1461,
                     "name": "Quindio",
                     "logo": "https://media.api-sports.io/football/teams/1461.png",
-                    "winner": null
+                    "winner": true
                 },
                 "away": {
                     "id": 1145,
                     "name": "Tigres FC",
                     "logo": "https://media.api-sports.io/football/teams/1145.png",
-                    "winner": null
+                    "winner": false
                 }
             },
             "goals": {
-                "home": 0,
+                "home": 1,
                 "away": 0
             },
             "score": {
