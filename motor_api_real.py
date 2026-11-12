@@ -19,8 +19,8 @@ headers = {
 fecha_hoy = datetime.now().strftime("%Y-%m-%d")
 print(f"⚽ Consultando partidos de fútbol para la fecha: {fecha_hoy}...")
 
-# 4. URL oficial corregida de API-Football
-url = f"https://api-sports.io{fecha_hoy}"
+dominio = "v3.football.api-sports.io"
+url = f"https://{dominio}/fixtures?date={fecha_hoy}"
 
 try:
     respuesta = requests.get(url, headers=headers, timeout=15)
