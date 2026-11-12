@@ -99,7 +99,7 @@
                 "status": {
                     "long": "Second Half",
                     "short": "2H",
-                    "elapsed": 52,
+                    "elapsed": 74,
                     "extra": null
                 }
             },
@@ -118,18 +118,18 @@
                     "id": 4302,
                     "name": "FAS",
                     "logo": "https://media.api-sports.io/football/teams/4302.png",
-                    "winner": true
+                    "winner": null
                 },
                 "away": {
                     "id": 26154,
                     "name": "Inter",
                     "logo": "https://media.api-sports.io/football/teams/26154.png",
-                    "winner": false
+                    "winner": null
                 }
             },
             "goals": {
                 "home": 2,
-                "away": 1
+                "away": 2
             },
             "score": {
                 "halftime": {
@@ -169,7 +169,7 @@
                 "status": {
                     "long": "Second Half",
                     "short": "2H",
-                    "elapsed": 51,
+                    "elapsed": 73,
                     "extra": null
                 }
             },
@@ -198,7 +198,7 @@
                 }
             },
             "goals": {
-                "home": 2,
+                "home": 3,
                 "away": 0
             },
             "score": {
@@ -239,7 +239,7 @@
                 "status": {
                     "long": "Second Half",
                     "short": "2H",
-                    "elapsed": 48,
+                    "elapsed": 70,
                     "extra": null
                 }
             },
