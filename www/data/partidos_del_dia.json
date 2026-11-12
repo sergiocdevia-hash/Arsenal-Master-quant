@@ -2,7 +2,6 @@
     "USL SUPER LEAGUE (USA)": [
         {
             "liga_completa": "USL SUPER LEAGUE (USA)",
-            "liga": "USL SUPER LEAGUE",
             "hora": "19:00",
             "local": "DC Power W",
             "visitante": "Brooklyn W",
@@ -24,7 +23,6 @@
     "PRIMERA DIVISION (El-Salvador)": [
         {
             "liga_completa": "PRIMERA DIVISION (El-Salvador)",
-            "liga": "PRIMERA DIVISION",
             "hora": "20:00",
             "local": "FAS",
             "visitante": "Inter",
@@ -44,7 +42,6 @@
         },
         {
             "liga_completa": "PRIMERA DIVISION (El-Salvador)",
-            "liga": "PRIMERA DIVISION",
             "hora": "16:30",
             "local": "Águila",
             "visitante": "Municipal Limeño",
@@ -64,7 +61,6 @@
         },
         {
             "liga_completa": "PRIMERA DIVISION (El-Salvador)",
-            "liga": "PRIMERA DIVISION",
             "hora": "16:30",
             "local": "Atletico Balboa",
             "visitante": "Inca Aruba",
@@ -86,7 +82,6 @@
     "LIGA MX FEMENIL (Mexico)": [
         {
             "liga_completa": "LIGA MX FEMENIL (Mexico)",
-            "liga": "LIGA MX FEMENIL",
             "hora": "20:00",
             "local": "América W",
             "visitante": "Toluca W",
@@ -106,7 +101,6 @@
         },
         {
             "liga_completa": "LIGA MX FEMENIL (Mexico)",
-            "liga": "LIGA MX FEMENIL",
             "hora": "22:00",
             "local": "Pachuca W",
             "visitante": "Monterrey W",
@@ -128,7 +122,6 @@
     "PRIMERA B (Colombia)": [
         {
             "liga_completa": "PRIMERA B (Colombia)",
-            "liga": "PRIMERA B",
             "hora": "20:10",
             "local": "Quindio",
             "visitante": "Tigres FC",
@@ -150,7 +143,6 @@
     "LIGA DE EXPANSIÓN MX (Mexico)": [
         {
             "liga_completa": "LIGA DE EXPANSIÓN MX (Mexico)",
-            "liga": "LIGA DE EXPANSIÓN MX",
             "hora": "21:00",
             "local": "Piratas",
             "visitante": "CA La Paz",
@@ -172,7 +164,6 @@
     "FRIENDLIES (World)": [
         {
             "liga_completa": "FRIENDLIES (World)",
-            "liga": "FRIENDLIES",
             "hora": "01:00",
             "local": "New Zealand",
             "visitante": "India",
@@ -192,7 +183,6 @@
         },
         {
             "liga_completa": "FRIENDLIES (World)",
-            "liga": "FRIENDLIES",
             "hora": "03:00",
             "local": "Thailand U23",
             "visitante": "Qatar U23",
@@ -212,7 +202,6 @@
         },
         {
             "liga_completa": "FRIENDLIES (World)",
-            "liga": "FRIENDLIES",
             "hora": "07:00",
             "local": "Singapore U23",
             "visitante": "Vietnam U23",
@@ -232,7 +221,6 @@
         },
         {
             "liga_completa": "FRIENDLIES (World)",
-            "liga": "FRIENDLIES",
             "hora": "08:00",
             "local": "Scotland U21",
             "visitante": "Ukraine U21",
@@ -252,7 +240,6 @@
         },
         {
             "liga_completa": "FRIENDLIES (World)",
-            "liga": "FRIENDLIES",
             "hora": "10:00",
             "local": "Uzbekistan",
             "visitante": "Russia",
@@ -272,7 +259,6 @@
         },
         {
             "liga_completa": "FRIENDLIES (World)",
-            "liga": "FRIENDLIES",
             "hora": "11:00",
             "local": "France U20",
             "visitante": "Denmark U20",
@@ -292,7 +278,6 @@
         },
         {
             "liga_completa": "FRIENDLIES (World)",
-            "liga": "FRIENDLIES",
             "hora": "12:00",
             "local": "Lithuania",
             "visitante": "Suriname",
@@ -312,7 +297,6 @@
         },
         {
             "liga_completa": "FRIENDLIES (World)",
-            "liga": "FRIENDLIES",
             "hora": "12:30",
             "local": "Malta",
             "visitante": "Eswatini",
@@ -334,7 +318,6 @@
     "AUSTRALIAN CHAMPIONSHIP (Australia)": [
         {
             "liga_completa": "AUSTRALIAN CHAMPIONSHIP (Australia)",
-            "liga": "AUSTRALIAN CHAMPIONSHIP",
             "hora": "03:30",
             "local": "Wests APIA",
             "visitante": "Adelaide City",
@@ -356,7 +339,6 @@
     "ÝOKARY LIGA (Turkmenistan)": [
         {
             "liga_completa": "ÝOKARY LIGA (Turkmenistan)",
-            "liga": "ÝOKARY LIGA",
             "hora": "05:00",
             "local": "Arkadag",
             "visitante": "Altyn Asyr",
@@ -378,7 +360,6 @@
     "WK-LEAGUE (South-Korea)": [
         {
             "liga_completa": "WK-LEAGUE (South-Korea)",
-            "liga": "WK-LEAGUE",
             "hora": "05:00",
             "local": "Hwacheon KSPO W",
             "visitante": "Gyeongju W",
@@ -400,7 +381,6 @@
     "LIGUE 1 (Congo-DR)": [
         {
             "liga_completa": "LIGUE 1 (Congo-DR)",
-            "liga": "LIGUE 1",
             "hora": "06:00",
             "local": "Tanganyika",
             "visitante": "AS New Soger",
@@ -420,7 +400,6 @@
         },
         {
             "liga_completa": "LIGUE 1 (Congo-DR)",
-            "liga": "LIGUE 1",
             "hora": "08:00",
             "local": "Dauphins Noirs",
             "visitante": "Novakin",
@@ -440,7 +419,6 @@
         },
         {
             "liga_completa": "LIGUE 1 (Congo-DR)",
-            "liga": "LIGUE 1",
             "hora": "08:00",
             "local": "Etoile de Kivu",
             "visitante": "FC Renaissance",
@@ -460,7 +438,6 @@
         },
         {
             "liga_completa": "LIGUE 1 (Congo-DR)",
-            "liga": "LIGUE 1",
             "hora": "09:00",
             "local": "Anges Verts",
             "visitante": "Étoile du Congo",
@@ -480,7 +457,6 @@
         },
         {
             "liga_completa": "LIGUE 1 (Congo-DR)",
-            "liga": "LIGUE 1",
             "hora": "09:00",
             "local": "Céleste",
             "visitante": "Maniema Union",
@@ -502,7 +478,6 @@
     "SECOND LEAGUE (Egypt)": [
         {
             "liga_completa": "SECOND LEAGUE (Egypt)",
-            "liga": "SECOND LEAGUE",
             "hora": "07:30",
             "local": "AL Nasr SC",
             "visitante": "Pharco",
@@ -522,7 +497,6 @@
         },
         {
             "liga_completa": "SECOND LEAGUE (Egypt)",
-            "liga": "SECOND LEAGUE",
             "hora": "07:30",
             "local": "Dayrout",
             "visitante": "Proxy",
@@ -542,7 +516,6 @@
         },
         {
             "liga_completa": "SECOND LEAGUE (Egypt)",
-            "liga": "SECOND LEAGUE",
             "hora": "07:30",
             "local": "El Entag EL Harby",
             "visitante": "Baladiyyat Al Mehalla",
@@ -562,7 +535,6 @@
         },
         {
             "liga_completa": "SECOND LEAGUE (Egypt)",
-            "liga": "SECOND LEAGUE",
             "hora": "07:30",
             "local": "Masar",
             "visitante": "Tersana",
@@ -582,7 +554,6 @@
         },
         {
             "liga_completa": "SECOND LEAGUE (Egypt)",
-            "liga": "SECOND LEAGUE",
             "hora": "07:30",
             "local": "Mega Sport",
             "visitante": "El Seka El Hadid",
@@ -604,7 +575,6 @@
     "REGIONALLIGA - WEST (Germany)": [
         {
             "liga_completa": "REGIONALLIGA - WEST (Germany)",
-            "liga": "REGIONALLIGA - WEST",
             "hora": "08:00",
             "local": "Paderborn II",
             "visitante": "Bochum II",
@@ -626,7 +596,6 @@
     "PREMIER LEAGUE (Uganda)": [
         {
             "liga_completa": "PREMIER LEAGUE (Uganda)",
-            "liga": "PREMIER LEAGUE",
             "hora": "08:00",
             "local": "Kigezi HomeBoyz",
             "visitante": "Vipers",
@@ -648,7 +617,6 @@
     "UEFA U19 CHAMPIONSHIP - QUALIFICATION (World)": [
         {
             "liga_completa": "UEFA U19 CHAMPIONSHIP - QUALIFICATION (World)",
-            "liga": "UEFA U19 CHAMPIONSHIP - QUALIFICATION",
             "hora": "08:00",
             "local": "Germany U19",
             "visitante": "Sweden U19",
@@ -668,7 +636,6 @@
         },
         {
             "liga_completa": "UEFA U19 CHAMPIONSHIP - QUALIFICATION (World)",
-            "liga": "UEFA U19 CHAMPIONSHIP - QUALIFICATION",
             "hora": "10:00",
             "local": "Portugal U19",
             "visitante": "Lithuania U19",
@@ -690,7 +657,6 @@
     "CAF U23 CUP OF NATIONS (World)": [
         {
             "liga_completa": "CAF U23 CUP OF NATIONS (World)",
-            "liga": "CAF U23 CUP OF NATIONS",
             "hora": "08:00",
             "local": "Ethiopia U23",
             "visitante": "Morocco U23",
@@ -710,7 +676,6 @@
         },
         {
             "liga_completa": "CAF U23 CUP OF NATIONS (World)",
-            "liga": "CAF U23 CUP OF NATIONS",
             "hora": "10:00",
             "local": "Angola U23",
             "visitante": "Congo U23",
@@ -730,7 +695,6 @@
         },
         {
             "liga_completa": "CAF U23 CUP OF NATIONS (World)",
-            "liga": "CAF U23 CUP OF NATIONS",
             "hora": "12:00",
             "local": "Tunisia U23",
             "visitante": "Gabon U23",
@@ -752,7 +716,6 @@
     "UEFA U21 CHAMPIONSHIP - QUALIFICATION (World)": [
         {
             "liga_completa": "UEFA U21 CHAMPIONSHIP - QUALIFICATION (World)",
-            "liga": "UEFA U21 CHAMPIONSHIP - QUALIFICATION",
             "hora": "08:00",
             "local": "Iceland U21",
             "visitante": "Greece U21",
@@ -774,7 +737,6 @@
     "FA CUP (Oman)": [
         {
             "liga_completa": "FA CUP (Oman)",
-            "liga": "FA CUP",
             "hora": "08:50",
             "local": "Oman Club",
             "visitante": "Al Nasr",
@@ -794,7 +756,6 @@
         },
         {
             "liga_completa": "FA CUP (Oman)",
-            "liga": "FA CUP",
             "hora": "08:50",
             "local": "Sur",
             "visitante": "Dhofar",
@@ -814,7 +775,6 @@
         },
         {
             "liga_completa": "FA CUP (Oman)",
-            "liga": "FA CUP",
             "hora": "08:55",
             "local": "Smail",
             "visitante": "Bahla",
@@ -836,7 +796,6 @@
     "AFRICA CUP OF NATIONS - QUALIFICATION (World)": [
         {
             "liga_completa": "AFRICA CUP OF NATIONS - QUALIFICATION (World)",
-            "liga": "AFRICA CUP OF NATIONS - QUALIFICATION",
             "hora": "10:00",
             "local": "Ghana",
             "visitante": "Somalia",
@@ -856,7 +815,6 @@
         },
         {
             "liga_completa": "AFRICA CUP OF NATIONS - QUALIFICATION (World)",
-            "liga": "AFRICA CUP OF NATIONS - QUALIFICATION",
             "hora": "11:00",
             "local": "Congo DR",
             "visitante": "Sierra Leone",
@@ -876,7 +834,6 @@
         },
         {
             "liga_completa": "AFRICA CUP OF NATIONS - QUALIFICATION (World)",
-            "liga": "AFRICA CUP OF NATIONS - QUALIFICATION",
             "hora": "11:00",
             "local": "Equatorial Guinea",
             "visitante": "Zimbabwe",
@@ -896,7 +853,6 @@
         },
         {
             "liga_completa": "AFRICA CUP OF NATIONS - QUALIFICATION (World)",
-            "liga": "AFRICA CUP OF NATIONS - QUALIFICATION",
             "hora": "11:00",
             "local": "Guinea",
             "visitante": "Eritrea",
@@ -916,7 +872,6 @@
         },
         {
             "liga_completa": "AFRICA CUP OF NATIONS - QUALIFICATION (World)",
-            "liga": "AFRICA CUP OF NATIONS - QUALIFICATION",
             "hora": "11:00",
             "local": "Madagascar",
             "visitante": "Guinea-Bissau",
@@ -936,7 +891,6 @@
         },
         {
             "liga_completa": "AFRICA CUP OF NATIONS - QUALIFICATION (World)",
-            "liga": "AFRICA CUP OF NATIONS - QUALIFICATION",
             "hora": "14:00",
             "local": "Benin",
             "visitante": "Central African Republic",
@@ -956,7 +910,6 @@
         },
         {
             "liga_completa": "AFRICA CUP OF NATIONS - QUALIFICATION (World)",
-            "liga": "AFRICA CUP OF NATIONS - QUALIFICATION",
             "hora": "14:00",
             "local": "Cameroon",
             "visitante": "Namibia",
@@ -976,7 +929,6 @@
         },
         {
             "liga_completa": "AFRICA CUP OF NATIONS - QUALIFICATION (World)",
-            "liga": "AFRICA CUP OF NATIONS - QUALIFICATION",
             "hora": "14:00",
             "local": "Ivory Coast",
             "visitante": "Gambia",
@@ -996,7 +948,6 @@
         },
         {
             "liga_completa": "AFRICA CUP OF NATIONS - QUALIFICATION (World)",
-            "liga": "AFRICA CUP OF NATIONS - QUALIFICATION",
             "hora": "14:00",
             "local": "Senegal",
             "visitante": "Sudan",
@@ -1018,7 +969,6 @@
     "UEFA U17 CHAMPIONSHIP - QUALIFICATION (World)": [
         {
             "liga_completa": "UEFA U17 CHAMPIONSHIP - QUALIFICATION (World)",
-            "liga": "UEFA U17 CHAMPIONSHIP - QUALIFICATION",
             "hora": "10:00",
             "local": "Bulgaria U17",
             "visitante": "Serbia U17",
@@ -1038,7 +988,6 @@
         },
         {
             "liga_completa": "UEFA U17 CHAMPIONSHIP - QUALIFICATION (World)",
-            "liga": "UEFA U17 CHAMPIONSHIP - QUALIFICATION",
             "hora": "10:00",
             "local": "Portugal U17",
             "visitante": "Andorra U17",
@@ -1060,7 +1009,6 @@
     "FRIENDLIES CLUBS (World)": [
         {
             "liga_completa": "FRIENDLIES CLUBS (World)",
-            "liga": "FRIENDLIES CLUBS",
             "hora": "10:00",
             "local": "BK Hacken",
             "visitante": "Fredrikstad",
@@ -1082,7 +1030,6 @@
     "U20 ELITE LEAGUE (World)": [
         {
             "liga_completa": "U20 ELITE LEAGUE (World)",
-            "liga": "U20 ELITE LEAGUE",
             "hora": "11:00",
             "local": "Italy U20",
             "visitante": "Portugal U20",
@@ -1102,7 +1049,6 @@
         },
         {
             "liga_completa": "U20 ELITE LEAGUE (World)",
-            "liga": "U20 ELITE LEAGUE",
             "hora": "14:30",
             "local": "England U20",
             "visitante": "Czechia U20",
@@ -1124,7 +1070,6 @@
     "LFA FIRST DIVISION (Liberia)": [
         {
             "liga_completa": "LFA FIRST DIVISION (Liberia)",
-            "liga": "LFA FIRST DIVISION",
             "hora": "11:00",
             "local": "Black Man Warrior",
             "visitante": "Heaven Eleven",
@@ -1144,7 +1089,6 @@
         },
         {
             "liga_completa": "LFA FIRST DIVISION (Liberia)",
-            "liga": "LFA FIRST DIVISION",
             "hora": "11:00",
             "local": "District 17",
             "visitante": "Borough",
@@ -1164,7 +1108,6 @@
         },
         {
             "liga_completa": "LFA FIRST DIVISION (Liberia)",
-            "liga": "LFA FIRST DIVISION",
             "hora": "11:00",
             "local": "Fassell",
             "visitante": "Discoveries",
@@ -1186,7 +1129,6 @@
     "UEFA NATIONS LEAGUE (World)": [
         {
             "liga_completa": "UEFA NATIONS LEAGUE (World)",
-            "liga": "UEFA NATIONS LEAGUE",
             "hora": "12:00",
             "local": "Türkiye",
             "visitante": "Belgium",
@@ -1206,7 +1148,6 @@
         },
         {
             "liga_completa": "UEFA NATIONS LEAGUE (World)",
-            "liga": "UEFA NATIONS LEAGUE",
             "hora": "12:00",
             "local": "Armenia",
             "visitante": "Cyprus",
@@ -1226,7 +1167,6 @@
         },
         {
             "liga_completa": "UEFA NATIONS LEAGUE (World)",
-            "liga": "UEFA NATIONS LEAGUE",
             "hora": "14:45",
             "local": "Italy",
             "visitante": "France",
@@ -1246,7 +1186,6 @@
         },
         {
             "liga_completa": "UEFA NATIONS LEAGUE (World)",
-            "liga": "UEFA NATIONS LEAGUE",
             "hora": "14:45",
             "local": "Czechia",
             "visitante": "Spain",
@@ -1266,7 +1205,6 @@
         },
         {
             "liga_completa": "UEFA NATIONS LEAGUE (World)",
-            "liga": "UEFA NATIONS LEAGUE",
             "hora": "14:45",
             "local": "England",
             "visitante": "Croatia",
@@ -1286,7 +1224,6 @@
         },
         {
             "liga_completa": "UEFA NATIONS LEAGUE (World)",
-            "liga": "UEFA NATIONS LEAGUE",
             "hora": "14:45",
             "local": "Albania",
             "visitante": "Finland",
@@ -1306,7 +1243,6 @@
         },
         {
             "liga_completa": "UEFA NATIONS LEAGUE (World)",
-            "liga": "UEFA NATIONS LEAGUE",
             "hora": "14:45",
             "local": "San Marino",
             "visitante": "Belarus",
@@ -1326,7 +1262,6 @@
         },
         {
             "liga_completa": "UEFA NATIONS LEAGUE (World)",
-            "liga": "UEFA NATIONS LEAGUE",
             "hora": "14:45",
             "local": "Montenegro",
             "visitante": "Latvia",
@@ -1348,7 +1283,6 @@
     "COPA DEL REY (Spain)": [
         {
             "liga_completa": "COPA DEL REY (Spain)",
-            "liga": "COPA DEL REY",
             "hora": "12:30",
             "local": "Calvo Sotelo",
             "visitante": "Albacete",
@@ -1368,7 +1302,6 @@
         },
         {
             "liga_completa": "COPA DEL REY (Spain)",
-            "liga": "COPA DEL REY",
             "hora": "13:00",
             "local": "Navalcarnero",
             "visitante": "Real Betis",
@@ -1388,7 +1321,6 @@
         },
         {
             "liga_completa": "COPA DEL REY (Spain)",
-            "liga": "COPA DEL REY",
             "hora": "13:00",
             "local": "Tarancón",
             "visitante": "Levante",
@@ -1410,7 +1342,6 @@
     "UEFA CHAMPIONS LEAGUE WOMEN (World)": [
         {
             "liga_completa": "UEFA CHAMPIONS LEAGUE WOMEN (World)",
-            "liga": "UEFA CHAMPIONS LEAGUE WOMEN",
             "hora": "12:45",
             "local": "Barcelona W",
             "visitante": "Arsenal W",
@@ -1430,7 +1361,6 @@
         },
         {
             "liga_completa": "UEFA CHAMPIONS LEAGUE WOMEN (World)",
-            "liga": "UEFA CHAMPIONS LEAGUE WOMEN",
             "hora": "15:00",
             "local": "SL Benfica W",
             "visitante": "Austria Wien W",
@@ -1452,7 +1382,6 @@
     "RESERVE LEAGUE (Argentina)": [
         {
             "liga_completa": "RESERVE LEAGUE (Argentina)",
-            "liga": "RESERVE LEAGUE",
             "hora": "13:00",
             "local": "Barracas Central Res.",
             "visitante": "Argentinos Juniors Res.",
@@ -1472,7 +1401,6 @@
         },
         {
             "liga_completa": "RESERVE LEAGUE (Argentina)",
-            "liga": "RESERVE LEAGUE",
             "hora": "13:00",
             "local": "Colón Res.",
             "visitante": "Central Córdoba SdE Res.",
@@ -1492,7 +1420,6 @@
         },
         {
             "liga_completa": "RESERVE LEAGUE (Argentina)",
-            "liga": "RESERVE LEAGUE",
             "hora": "13:00",
             "local": "Godoy Cruz Res.",
             "visitante": "Gimnasia La Plata Res.",
@@ -1512,7 +1439,6 @@
         },
         {
             "liga_completa": "RESERVE LEAGUE (Argentina)",
-            "liga": "RESERVE LEAGUE",
             "hora": "13:00",
             "local": "Huracán Res.",
             "visitante": "Estudiantes Rio Cuarto 2",
@@ -1532,7 +1458,6 @@
         },
         {
             "liga_completa": "RESERVE LEAGUE (Argentina)",
-            "liga": "RESERVE LEAGUE",
             "hora": "13:00",
             "local": "Rosario Central Res.",
             "visitante": "River Plate Res.",
@@ -1552,7 +1477,6 @@
         },
         {
             "liga_completa": "RESERVE LEAGUE (Argentina)",
-            "liga": "RESERVE LEAGUE",
             "hora": "17:00",
             "local": "Boca Juniors Res.",
             "visitante": "Newell's Old Boys Res.",
@@ -1574,7 +1498,6 @@
     "COPA FARES LOPES (Brazil)": [
         {
             "liga_completa": "COPA FARES LOPES (Brazil)",
-            "liga": "COPA FARES LOPES",
             "hora": "13:00",
             "local": "Ceara B",
             "visitante": "Uniclinic Atletico Clube",
@@ -1596,7 +1519,6 @@
     "COPA DE LA REINA (Spain)": [
         {
             "liga_completa": "COPA DE LA REINA (Spain)",
-            "liga": "COPA DE LA REINA",
             "hora": "13:00",
             "local": "Osasuna W",
             "visitante": "Edf Logrono W",
@@ -1616,7 +1538,6 @@
         },
         {
             "liga_completa": "COPA DE LA REINA (Spain)",
-            "liga": "COPA DE LA REINA",
             "hora": "14:00",
             "local": "CE Europa W",
             "visitante": "Deportivo de La Coruña W",
@@ -1638,7 +1559,6 @@
     "COUPE DE FRANCE (France)": [
         {
             "liga_completa": "COUPE DE FRANCE (France)",
-            "liga": "COUPE DE FRANCE",
             "hora": "13:00",
             "local": "Chambéry",
             "visitante": "Grenoble",
@@ -1660,7 +1580,6 @@
     "TORNEO FEDERAL A (Argentina)": [
         {
             "liga_completa": "TORNEO FEDERAL A (Argentina)",
-            "liga": "TORNEO FEDERAL A",
             "hora": "13:00",
             "local": "Kimberley Mar del Plata",
             "visitante": "Olimpo Bahia Blanca",
@@ -1682,7 +1601,6 @@
     "PAULISTA - U20 (Brazil)": [
         {
             "liga_completa": "PAULISTA - U20 (Brazil)",
-            "liga": "PAULISTA - U20",
             "hora": "13:00",
             "local": "RB Bragantino U20",
             "visitante": "Corinthians U20",
@@ -1704,7 +1622,6 @@
     "PARAENSE U20 (Brazil)": [
         {
             "liga_completa": "PARAENSE U20 (Brazil)",
-            "liga": "PARAENSE U20",
             "hora": "13:30",
             "local": "Curumins U20",
             "visitante": "Paysandu PA U20",
@@ -1724,7 +1641,6 @@
         },
         {
             "liga_completa": "PARAENSE U20 (Brazil)",
-            "liga": "PARAENSE U20",
             "hora": "13:30",
             "local": "Águia de Marabá U20",
             "visitante": "Mec Maraba U20",
@@ -1746,7 +1662,6 @@
     "CONCACAF NATIONS LEAGUE (World)": [
         {
             "liga_completa": "CONCACAF NATIONS LEAGUE (World)",
-            "liga": "CONCACAF NATIONS LEAGUE",
             "hora": "14:00",
             "local": "Barbados",
             "visitante": "Guadeloupe",
@@ -1766,7 +1681,6 @@
         },
         {
             "liga_completa": "CONCACAF NATIONS LEAGUE (World)",
-            "liga": "CONCACAF NATIONS LEAGUE",
             "hora": "14:00",
             "local": "Cayman Islands",
             "visitante": "Guyana",
@@ -1786,7 +1700,6 @@
         },
         {
             "liga_completa": "CONCACAF NATIONS LEAGUE (World)",
-            "liga": "CONCACAF NATIONS LEAGUE",
             "hora": "15:00",
             "local": "Bonaire",
             "visitante": "Cuba",
@@ -1806,7 +1719,6 @@
         },
         {
             "liga_completa": "CONCACAF NATIONS LEAGUE (World)",
-            "liga": "CONCACAF NATIONS LEAGUE",
             "hora": "17:00",
             "local": "Aruba",
             "visitante": "Martinique",
@@ -1826,7 +1738,6 @@
         },
         {
             "liga_completa": "CONCACAF NATIONS LEAGUE (World)",
-            "liga": "CONCACAF NATIONS LEAGUE",
             "hora": "18:00",
             "local": "Antigua and Barbuda",
             "visitante": "Trinidad and Tobago",
@@ -1848,7 +1759,6 @@
     "SEGUNDA DIVISIÓN (Uruguay)": [
         {
             "liga_completa": "SEGUNDA DIVISIÓN (Uruguay)",
-            "liga": "SEGUNDA DIVISIÓN",
             "hora": "14:30",
             "local": "Atenas",
             "visitante": "Oriental",
@@ -1868,7 +1778,6 @@
         },
         {
             "liga_completa": "SEGUNDA DIVISIÓN (Uruguay)",
-            "liga": "SEGUNDA DIVISIÓN",
             "hora": "14:30",
             "local": "Cerrito",
             "visitante": "Colón",
@@ -1888,7 +1797,6 @@
         },
         {
             "liga_completa": "SEGUNDA DIVISIÓN (Uruguay)",
-            "liga": "SEGUNDA DIVISIÓN",
             "hora": "14:30",
             "local": "Plaza Colonia",
             "visitante": "Rentistas",
@@ -1910,7 +1818,6 @@
     "PREMIER LEAGUE (Jamaica)": [
         {
             "liga_completa": "PREMIER LEAGUE (Jamaica)",
-            "liga": "PREMIER LEAGUE",
             "hora": "15:00",
             "local": "Mount Pleasant Academy",
             "visitante": "Portmore United",
@@ -1932,7 +1839,6 @@
     "SERIE B (Brazil)": [
         {
             "liga_completa": "SERIE B (Brazil)",
-            "liga": "SERIE B",
             "hora": "17:00",
             "local": "Ponte Preta",
             "visitante": "Operario-PR",
@@ -1952,7 +1858,6 @@
         },
         {
             "liga_completa": "SERIE B (Brazil)",
-            "liga": "SERIE B",
             "hora": "18:00",
             "local": "São Bernardo",
             "visitante": "Athletic Club",
@@ -1974,7 +1879,6 @@
     "PRIMERA A (Colombia)": [
         {
             "liga_completa": "PRIMERA A (Colombia)",
-            "liga": "PRIMERA A",
             "hora": "17:00",
             "local": "Deportivo Pasto",
             "visitante": "Junior",
@@ -1996,7 +1900,6 @@
     "LIGA NACIONAL (Guatemala)": [
         {
             "liga_completa": "LIGA NACIONAL (Guatemala)",
-            "liga": "LIGA NACIONAL",
             "hora": "17:00",
             "local": "Aurora",
             "visitante": "Mixco",
@@ -2018,7 +1921,6 @@
     "COPA DE LA DIVISIÓN PROFESIONAL (Bolivia)": [
         {
             "liga_completa": "COPA DE LA DIVISIÓN PROFESIONAL (Bolivia)",
-            "liga": "COPA DE LA DIVISIÓN PROFESIONAL",
             "hora": "17:00",
             "local": "Real Potosí",
             "visitante": "Nacional Potosí",
@@ -2040,7 +1942,6 @@
     "SUPER COPA (Argentina)": [
         {
             "liga_completa": "SUPER COPA (Argentina)",
-            "liga": "SUPER COPA",
             "hora": "18:00",
             "local": "Estudiantes L.P.",
             "visitante": "Independ. Rivadavia",
@@ -2062,7 +1963,6 @@
     "PRIMERA DIVISIÓN (Uruguay)": [
         {
             "liga_completa": "PRIMERA DIVISIÓN (Uruguay)",
-            "liga": "PRIMERA DIVISIÓN",
             "hora": "18:00",
             "local": "Cerro Largo",
             "visitante": "Progreso",

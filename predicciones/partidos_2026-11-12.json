@@ -97,10 +97,10 @@
                     "city": "Santa Ana"
                 },
                 "status": {
-                    "long": "Second Half",
-                    "short": "2H",
-                    "elapsed": 74,
-                    "extra": null
+                    "long": "Match Finished",
+                    "short": "FT",
+                    "elapsed": 90,
+                    "extra": 13
                 }
             },
             "league": {
@@ -137,8 +137,8 @@
                     "away": 1
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 2,
+                    "away": 2
                 },
                 "extratime": {
                     "home": null,
@@ -167,10 +167,10 @@
                     "city": "Mexico City"
                 },
                 "status": {
-                    "long": "Second Half",
-                    "short": "2H",
-                    "elapsed": 73,
-                    "extra": null
+                    "long": "Match Finished",
+                    "short": "FT",
+                    "elapsed": 90,
+                    "extra": 5
                 }
             },
             "league": {
@@ -207,8 +207,8 @@
                     "away": 0
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 3,
+                    "away": 0
                 },
                 "extratime": {
                     "home": null,
@@ -237,9 +237,9 @@
                     "city": "Armenia"
                 },
                 "status": {
-                    "long": "Second Half",
-                    "short": "2H",
-                    "elapsed": 70,
+                    "long": "Match Finished",
+                    "short": "FT",
+                    "elapsed": 90,
                     "extra": null
                 }
             },
@@ -277,8 +277,8 @@
                     "away": 0
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 1,
+                    "away": 0
                 },
                 "extratime": {
                     "home": null,
@@ -368,7 +368,7 @@
                 "date": "2026-11-12T03:00:00+00:00",
                 "timestamp": 1794452400,
                 "periods": {
-                    "first": null,
+                    "first": 1794452400,
                     "second": null
                 },
                 "venue": {
@@ -377,9 +377,9 @@
                     "city": "Pachuca de Soto"
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 10,
                     "extra": null
                 }
             },
@@ -398,23 +398,23 @@
                     "id": 14881,
                     "name": "Pachuca W",
                     "logo": "https://media.api-sports.io/football/teams/14881.png",
-                    "winner": null
+                    "winner": false
                 },
                 "away": {
                     "id": 14879,
                     "name": "Monterrey W",
                     "logo": "https://media.api-sports.io/football/teams/14879.png",
-                    "winner": null
+                    "winner": true
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 1
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 1
                 },
                 "fulltime": {
                     "home": null,
