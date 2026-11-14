@@ -1,7 +1,18 @@
-import os, sys, json, math, csv, io, random, requests
+import os
+import sys
+import json
+import math
+import csv
+import io
+import random
+import html
+import requests
 from datetime import datetime, timedelta, timezone
+from google import genai
+from google.genai import types
 
 API_KEY = os.getenv("API_FOOTBALL_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 URL_WEB_VIP = "https://github.io"
@@ -24,24 +35,29 @@ LIGAS_VIP_IDS = {
     241: "COPA COLOMBIA"
 }
 
+
 def cargar_json(ruta, default):
     if os.path.exists(ruta):
         try:
             with open(ruta, "r", encoding="utf-8") as f:
                 data = json.load(f)
-                if isinstance(data, dict):
+                if isinstance(data, type(default)):
                     return data
         except Exception:
             pass
     return default
 
+
 def guardar_json(ruta, data):
-    os.makedirs(os.path.dirname(ruta), exist_ok=True)
+    carpeta = os.path.dirname(ruta)
+    if carpeta:
+        os.makedirs(carpeta, exist_ok=True)
     try:
         with open(ruta, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Aviso guardando {ruta}: {e}")
+
 
 def descargar_clubelo(fecha_str):
     elos = {}
@@ -60,6 +76,7 @@ def descargar_clubelo(fecha_str):
         pass
     return elos
 
+
 def buscar_elo(nombre_equipo, mapa_elo):
     nombre = nombre_equipo.lower().strip()
     if nombre in mapa_elo:
@@ -68,6 +85,7 @@ def buscar_elo(nombre_equipo, mapa_elo):
         if nombre in k or k in nombre:
             return v
     return 1500.0
+
 
 def obtener_tabla(id_liga, temporada):
     if not API_KEY:
@@ -97,9 +115,11 @@ def obtener_tabla(id_liga, temporada):
     except Exception:
         return {}
 
+
 def factor_forma(forma_str):
     pts = sum(3 if c == "W" else (1 if c == "D" else 0) for c in (forma_str or ""))
     return 0.88 + (pts / 15.0) * 0.24
+
 
 def analizar_h2h(h2h_list, id_local):
     if not isinstance(h2h_list, list) or not h2h_list:
@@ -116,6 +136,7 @@ def analizar_h2h(h2h_list, id_local):
             gv += gh
     n = len(h2h_list)
     return max(0.85, min(1.15, 0.90 + (gl / n) * 0.08)), max(0.85, min(1.15, 0.90 + (gv / n) * 0.08))
+
 
 def extraer_cuotas(bookmakers):
     if not isinstance(bookmakers, list):
@@ -141,10 +162,11 @@ def extraer_cuotas(bookmakers):
                         c_mundo = terna
     return (c_asia or c_mundo), (c_mundo or c_asia)
 
+
 def simulacion_markov_10k(lambda_l, lambda_v, semilla_id):
     rng = random.Random(semilla_id)
     pesos = (0.13, 0.15, 0.17, 0.16, 0.18, 0.21)
-    wl = dr = wv = eg = btts = u25 = 0
+    wl = dr = wv = og = btts = u25 = 0
     for _ in range(10000):
         gl = gv = 0
         for p in pesos:
@@ -160,34 +182,77 @@ def simulacion_markov_10k(lambda_l, lambda_v, semilla_id):
             wv += 1
         else:
             dr += 1
-            if gl >= 1:
-                eg += 1
+        if gl >= 1:
+            og += 1
         if gl >= 1 and gv >= 1:
             btts += 1
         if gl + gv <= 2:
             u25 += 1
-    return wl / 10000.0, dr / 10000.0, wv / 10000.0, eg / 10000.0, btts / 10000.0, u25 / 10000.0
+    return wl / 10000.0, dr / 10000.0, wv / 10000.0, og / 10000.0, btts / 10000.0, u25 / 10000.0
+
+
+def de_vigging(terna):
+    if not terna or any(c <= 1.0 for c in terna):
+        return (0.34, 0.33, 0.33)
+    inv = [1.0 / c for c in terna]
+    suma = sum(inv)
+    return tuple(x / suma for x in inv)
+
+
+def entropia_shannon(probs):
+    h = 0.0
+    for p in probs:
+        if p > 0:
+            h -= p * math.log2(p)
+    return h / math.log2(len(probs)) if len(probs) > 1 else 1.0
+
+
+def criterio_kelly(prob_real, cuota, fraccion=0.25, max_stake=0.035):
+    if cuota <= 1.01 or prob_real <= 0.0:
+        return 0.0
+    b = cuota - 1.0
+    q = 1.0 - prob_real
+    f = ((b * prob_real) - q) / b
+    if f <= 0:
+        return 0.0
+    return round(min(max_stake, f * fraccion) * 100.0, 2)
+
 
 def auditar_y_calibrar(resultados_ayer, cal):
     if not resultados_ayer or not os.path.exists("www/data/partidos_del_dia.json"):
         return ""
     previa = cargar_json("www/data/partidos_del_dia.json", {})
     ok_cnt = eval_cnt = 0
+    historial = cargar_json("www/data/historial_aciertos.json", {"registros": []})
+
     for tarjetas in previa.values():
+        if not isinstance(tarjetas, list):
+            continue
         for t in tarjetas:
             fid = str(t.get("fixture_id", ""))
             if fid in resultados_ayer:
                 eval_cnt += 1
                 gl, gv = resultados_ayer[fid]["gl"], resultados_ayer[fid]["gv"]
                 pred = t.get("prediccion", "")
-                if (("EMPATE CON GOLES" in pred and gl == gv and gl >= 1) or
+                acierto = (
+                    ("EMPATE CON GOLES" in pred and gl == gv and gl >= 1) or
                     ("LOCAL" in pred and "1X" not in pred and "EMPATE" not in pred and gl > gv) or
                     ("VISITANTE" in pred and "X2" not in pred and "EMPATE" not in pred and gv > gl) or
-                    (("1X" in pred or "LOCAL O EMPATE" in pred) and gl >= gv) or
-                    (("X2" in pred or "EMPATE O VISITANTE" in pred) and gv >= gl) or
+                    ("1X" in pred and gl >= gv) or
+                    ("X2" in pred and gv >= gl) or
                     ("BTTS" in pred and gl >= 1 and gv >= 1) or
-                    ("UNDER" in pred and gl + gv <= 2)):
+                    ("UNDER" in pred and gl + gv <= 2)
+                )
+                if acierto:
                     ok_cnt += 1
+                historial["registros"].append({
+                    "fixture_id": fid,
+                    "partido": t.get("partido", ""),
+                    "prediccion": pred,
+                    "marcador": f"{gl}-{gv}",
+                    "acierto": acierto
+                })
+
     if eval_cnt > 0:
         pct = (ok_cnt / eval_cnt) * 100.0
         if pct < 55.0:
@@ -197,47 +262,17 @@ def auditar_y_calibrar(resultados_ayer, cal):
             cal["peso_modelo"] = min(0.70, round(cal.get("peso_modelo", 0.60) + 0.02, 2))
             cal["peso_asia"] = round(1.0 - cal["peso_modelo"], 2)
         guardar_json("predicciones/calibracion.json", cal)
-        return f"📋 *Auditoria Ayer:* `{ok_cnt}/{eval_cnt}` aciertos (`{pct:.1f}%`)\n"
+        historial["registros"] = historial["registros"][-200:]
+        guardar_json("www/data/historial_aciertos.json", historial)
+        return f"Auditoria Ayer: {ok_cnt}/{eval_cnt} aciertos ({pct:.1f}%)\n"
     return ""
 
-def analizar_partido(item, liga_vip, stats, elo_map, bms, h2h, alin, hist_ayer, cal, clv_reg):
-    fix, tms = item.get("fixture", {}), item.get("teams", {})
-    fid = fix.get("id", 0)
-    fid_s = str(fid)
-    idl, idv = tms.get("home", {}).get("id", 0), tms.get("away", {}).get("id", 0)
-    loc, vis = str(tms.get("home", {}).get("name", "Local")), str(tms.get("away", {}).get("name", "Visitante"))
+
+def comite_3_ias(partido, liga, fecha_str, prediccion, ctx_tecnico):
+    if not GEMINI_API_KEY:
+        return "⚠️ SIN API GEMINI (Modo Cuántico Puro)", True
 
     try:
-        dt_u = datetime.fromisoformat(str(fix.get("date", "")).replace("Z", "+00:00"))
-        hora_col = (dt_u - timedelta(hours=5)).strftime("%H:%M")
-    except Exception:
-        dt_u, hora_col = None, "00:00"
-
-    fat_l = fat_v = 1.0
-    if dt_u:
-        if idl in hist_ayer and 12 < abs((dt_u - hist_ayer[idl]).total_seconds()) / 3600.0 < 72:
-            fat_l = 0.93
-        if idv in hist_ayer and 12 < abs((dt_u - hist_ayer[idv]).total_seconds()) / 3600.0 < 72:
-            fat_v = 0.93
-
-    diff_elo = (buscar_elo(loc, elo_map) - buscar_elo(vis, elo_map)) / 400.0
-    fe_l = max(0.75, min(1.30, 1.0 + diff_elo * 0.25))
-    fe_v = max(0.75, min(1.30, 1.0 - diff_elo * 0.25))
-    fh_l, fh_v = analizar_h2h(h2h, idl)
-    fg = cal.get("factor_goles", 1.0)
-
-    if idl in stats and idv in stats:
-        sl, sv = stats[idl], stats[idv]
-        rl = ((sl["ataque"] + sv["defensa"]) / 2.0) * 1.10 * fe_l * factor_forma(sl["forma"]) * fh_l * fat_l * fg
-        rv = ((sv["ataque"] + sl["defensa"]) / 2.0) * 0.92 * fe_v * factor_forma(sv["forma"]) * fh_v * fat_v * fg
-        lam_l, lam_v = round(0.75 * rl + 0.3625, 2), round(0.75 * rv + 0.2875, 2)
-        ctx = f"FORMA {sl['forma']} vs {sv['forma']} + ELO"
-    else:
-        lam_l = round(1.42 * fe_l * fh_l * fat_l * fg, 2)
-        lam_v = round(1.12 * fe_v * fh_v * fat_v * fg, 2)
-        ctx = "CLUBELO + H2H + BAYESIANO"
-    if alin:
-        ctx += " [XI CONFIRMADO]"
-
-    pl, pe, pv, peg, pbtts, pu25 = simulacion_markov_10k(lam_l, lam_v, fid)
-    c_asia, c_mundo = extraer_cuotas(bms)
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        perfiles = [
+            "Analista Médico y Bajas: Busca lesiones de última hora, sancionados o rotaciones confirmadas para hoy.",
