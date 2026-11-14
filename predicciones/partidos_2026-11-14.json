@@ -2337,10 +2337,10 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Second Half",
-                    "short": "2H",
+                    "long": "Match Finished",
+                    "short": "FT",
                     "elapsed": 90,
-                    "extra": null
+                    "extra": 8
                 }
             },
             "league": {
@@ -2358,17 +2358,17 @@
                     "id": 6401,
                     "name": "North District",
                     "logo": "https://media.api-sports.io/football/teams/6401.png",
-                    "winner": null
+                    "winner": true
                 },
                 "away": {
                     "id": 4462,
                     "name": "Hong Kong FC",
                     "logo": "https://media.api-sports.io/football/teams/4462.png",
-                    "winner": null
+                    "winner": false
                 }
             },
             "goals": {
-                "home": 3,
+                "home": 4,
                 "away": 3
             },
             "score": {
@@ -2377,8 +2377,8 @@
                     "away": 0
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 4,
+                    "away": 3
                 },
                 "extratime": {
                     "home": null,
@@ -2407,10 +2407,10 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Second Half",
-                    "short": "2H",
-                    "elapsed": 89,
-                    "extra": null
+                    "long": "Match Finished",
+                    "short": "FT",
+                    "elapsed": 90,
+                    "extra": 4
                 }
             },
             "league": {
@@ -2438,7 +2438,7 @@
                 }
             },
             "goals": {
-                "home": 0,
+                "home": 1,
                 "away": 5
             },
             "score": {
@@ -2447,8 +2447,8 @@
                     "away": 2
                 },
                 "fulltime": {
-                    "home": null,
-                    "away": null
+                    "home": 1,
+                    "away": 5
                 },
                 "extratime": {
                     "home": null,
@@ -2609,7 +2609,7 @@
                 "timestamp": 1794643200,
                 "periods": {
                     "first": 1794643200,
-                    "second": null
+                    "second": 1794646800
                 },
                 "venue": {
                     "id": null,
@@ -2617,10 +2617,10 @@
                     "city": null
                 },
                 "status": {
-                    "long": "First Half",
-                    "short": "1H",
-                    "elapsed": 45,
-                    "extra": 1
+                    "long": "Second Half",
+                    "short": "2H",
+                    "elapsed": 56,
+                    "extra": null
                 }
             },
             "league": {
@@ -2819,7 +2819,7 @@
                 "timestamp": 1794643200,
                 "periods": {
                     "first": 1794643200,
-                    "second": null
+                    "second": 1794646800
                 },
                 "venue": {
                     "id": null,
@@ -2827,10 +2827,10 @@
                     "city": null
                 },
                 "status": {
-                    "long": "First Half",
-                    "short": "1H",
-                    "elapsed": 45,
-                    "extra": 1
+                    "long": "Second Half",
+                    "short": "2H",
+                    "elapsed": 58,
+                    "extra": null
                 }
             },
             "league": {
@@ -2889,7 +2889,7 @@
                 "timestamp": 1794643200,
                 "periods": {
                     "first": 1794643200,
-                    "second": null
+                    "second": 1794646800
                 },
                 "venue": {
                     "id": null,
@@ -2897,10 +2897,10 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Halftime",
-                    "short": "HT",
-                    "elapsed": 45,
-                    "extra": 4
+                    "long": "Second Half",
+                    "short": "2H",
+                    "elapsed": 60,
+                    "extra": null
                 }
             },
             "league": {
@@ -3099,7 +3099,7 @@
                 "timestamp": 1794643200,
                 "periods": {
                     "first": 1794643200,
-                    "second": null
+                    "second": 1794646800
                 },
                 "venue": {
                     "id": null,
@@ -3107,10 +3107,10 @@
                     "city": "Pleiku"
                 },
                 "status": {
-                    "long": "Halftime",
-                    "short": "HT",
-                    "elapsed": 45,
-                    "extra": 1
+                    "long": "Second Half",
+                    "short": "2H",
+                    "elapsed": 63,
+                    "extra": null
                 }
             },
             "league": {
@@ -3319,7 +3319,7 @@
                 "status": {
                     "long": "First Half",
                     "short": "1H",
-                    "elapsed": 12,
+                    "elapsed": 44,
                     "extra": null
                 }
             },
@@ -3349,12 +3349,12 @@
             },
             "goals": {
                 "home": 2,
-                "away": 0
+                "away": 1
             },
             "score": {
                 "halftime": {
                     "home": 2,
-                    "away": 0
+                    "away": 1
                 },
                 "fulltime": {
                     "home": null,
@@ -3378,7 +3378,7 @@
                 "date": "2026-11-14T09:00:00+00:00",
                 "timestamp": 1794646800,
                 "periods": {
-                    "first": null,
+                    "first": 1794646800,
                     "second": null
                 },
                 "venue": {
@@ -3387,9 +3387,9 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 19,
                     "extra": null
                 }
             },
@@ -3418,13 +3418,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -3448,7 +3448,7 @@
                 "date": "2026-11-14T09:00:00+00:00",
                 "timestamp": 1794646800,
                 "periods": {
-                    "first": null,
+                    "first": 1794646800,
                     "second": null
                 },
                 "venue": {
@@ -3457,9 +3457,9 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 16,
                     "extra": null
                 }
             },
@@ -3488,13 +3488,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -3658,7 +3658,7 @@
                 "date": "2026-11-14T09:00:00+00:00",
                 "timestamp": 1794646800,
                 "periods": {
-                    "first": null,
+                    "first": 1794646800,
                     "second": null
                 },
                 "venue": {
@@ -3667,9 +3667,9 @@
                     "city": "Dhaka"
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 18,
                     "extra": null
                 }
             },
@@ -3688,23 +3688,23 @@
                     "id": 1537,
                     "name": "India",
                     "logo": "https://media.api-sports.io/football/teams/1537.png",
-                    "winner": null
+                    "winner": true
                 },
                 "away": {
                     "id": 1540,
                     "name": "Bhutan",
                     "logo": "https://media.api-sports.io/football/teams/1540.png",
-                    "winner": null
+                    "winner": false
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 1,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 1,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -3737,9 +3737,9 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 16,
                     "extra": null
                 }
             },
@@ -3768,13 +3768,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -3798,7 +3798,7 @@
                 "date": "2026-11-14T09:15:00+00:00",
                 "timestamp": 1794647700,
                 "periods": {
-                    "first": null,
+                    "first": 1794647700,
                     "second": null
                 },
                 "venue": {
@@ -3807,9 +3807,9 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 3,
                     "extra": null
                 }
             },
@@ -3838,13 +3838,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -3938,7 +3938,7 @@
                 "date": "2026-11-14T09:15:00+00:00",
                 "timestamp": 1794647700,
                 "periods": {
-                    "first": null,
+                    "first": 1794647700,
                     "second": null
                 },
                 "venue": {
@@ -3947,9 +3947,9 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 3,
                     "extra": null
                 }
             },
@@ -3978,13 +3978,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -4078,7 +4078,7 @@
                 "date": "2026-11-14T09:15:00+00:00",
                 "timestamp": 1794647700,
                 "periods": {
-                    "first": null,
+                    "first": 1794647700,
                     "second": null
                 },
                 "venue": {
@@ -4087,9 +4087,9 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 6,
                     "extra": null
                 }
             },
@@ -4118,13 +4118,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -4148,7 +4148,7 @@
                 "date": "2026-11-14T09:15:00+00:00",
                 "timestamp": 1794647700,
                 "periods": {
-                    "first": null,
+                    "first": 1794647700,
                     "second": null
                 },
                 "venue": {
@@ -4157,9 +4157,9 @@
                     "city": "Prague"
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 3,
                     "extra": null
                 }
             },
@@ -4188,13 +4188,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -4218,7 +4218,7 @@
                 "date": "2026-11-14T09:15:00+00:00",
                 "timestamp": 1794647700,
                 "periods": {
-                    "first": null,
+                    "first": 1794647700,
                     "second": null
                 },
                 "venue": {
@@ -4227,9 +4227,9 @@
                     "city": "Chlumec nad Cidlinou"
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 2,
                     "extra": null
                 }
             },
@@ -4258,13 +4258,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -4288,7 +4288,7 @@
                 "date": "2026-11-14T09:15:00+00:00",
                 "timestamp": 1794647700,
                 "periods": {
-                    "first": null,
+                    "first": 1794647700,
                     "second": null
                 },
                 "venue": {
@@ -4297,9 +4297,9 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 1,
                     "extra": null
                 }
             },
@@ -4328,13 +4328,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -4358,7 +4358,7 @@
                 "date": "2026-11-14T09:15:00+00:00",
                 "timestamp": 1794647700,
                 "periods": {
-                    "first": null,
+                    "first": 1794647700,
                     "second": null
                 },
                 "venue": {
@@ -4367,9 +4367,9 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 2,
                     "extra": null
                 }
             },
@@ -4398,13 +4398,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -4428,7 +4428,7 @@
                 "date": "2026-11-14T09:15:00+00:00",
                 "timestamp": 1794647700,
                 "periods": {
-                    "first": null,
+                    "first": 1794647700,
                     "second": null
                 },
                 "venue": {
@@ -4437,9 +4437,9 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 1,
                     "extra": null
                 }
             },
@@ -4468,13 +4468,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -4498,7 +4498,7 @@
                 "date": "2026-11-14T09:15:00+00:00",
                 "timestamp": 1794647700,
                 "periods": {
-                    "first": null,
+                    "first": 1794647700,
                     "second": null
                 },
                 "venue": {
@@ -4507,9 +4507,9 @@
                     "city": "Pardubice"
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 3,
                     "extra": null
                 }
             },
@@ -4538,13 +4538,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -4568,7 +4568,7 @@
                 "date": "2026-11-14T09:15:00+00:00",
                 "timestamp": 1794647700,
                 "periods": {
-                    "first": null,
+                    "first": 1794647700,
                     "second": null
                 },
                 "venue": {
@@ -4577,9 +4577,9 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 2,
                     "extra": null
                 }
             },
@@ -4608,13 +4608,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
@@ -4638,7 +4638,7 @@
                 "date": "2026-11-14T09:15:00+00:00",
                 "timestamp": 1794647700,
                 "periods": {
-                    "first": null,
+                    "first": 1794647700,
                     "second": null
                 },
                 "venue": {
@@ -4647,9 +4647,9 @@
                     "city": null
                 },
                 "status": {
-                    "long": "Not Started",
-                    "short": "NS",
-                    "elapsed": null,
+                    "long": "First Half",
+                    "short": "1H",
+                    "elapsed": 1,
                     "extra": null
                 }
             },
@@ -4678,13 +4678,13 @@
                 }
             },
             "goals": {
-                "home": null,
-                "away": null
+                "home": 0,
+                "away": 0
             },
             "score": {
                 "halftime": {
-                    "home": null,
-                    "away": null
+                    "home": 0,
+                    "away": 0
                 },
                 "fulltime": {
                     "home": null,
