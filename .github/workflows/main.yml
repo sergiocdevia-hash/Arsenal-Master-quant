@@ -26,7 +26,7 @@ jobs:
       - name: Instalar Librerias Necesarias
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests google-genai
 
       - name: 1. Descargar Partidos, Cuotas y Contexto Real
         env:
@@ -37,6 +37,7 @@ jobs:
       - name: 2. Ejecutar Cerebro V18.1 y Enviar a Telegram
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
