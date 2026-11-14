@@ -12,7 +12,7 @@ from google import genai
 from google.genai import types
 
 API_KEY = os.getenv("API_FOOTBALL_KEY")
-GEMINI_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 URL_WEB_VIP = "https://github.io"
@@ -267,8 +267,8 @@ def auditar_y_calibrar(resultados_ayer, cal):
 
 
 def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
-    if not GEMINI_KEY:
+    if not GEMINI_API_KEY:
         return True, "⚠️ Sin GEMINI_API_KEY (Auditoría IA omitida)"
-    client = genai.Client(api_key=GEMINI_KEY)
+    client = genai.Client(api_key=GEMINI_API_KEY)
     perfiles = [
-        ("Analista de Bajas y Lesiones", f"Busca lesiones recientes, sancionados o bajas clave de última hora para {loc} vs {vis} ({liga}, fecha {fecha_str}). Responde SOLO 'VERDE' si no hay bajas críticas que invaliden '{prediccion}', o 'TRAMPA: [razón breve]' si hay riesgo alto."),
+        ("Analista de Bajas y Lesiones", f"Busca lesiones recientes, sancionados o bajas clave de última hora para {loc} vs {vis} ({liga}) hoy {fecha_str}. Responde en máximo 2 líneas y termina con VOTO: LUZ VERDE o VOTO: TRAMPA."),
