@@ -1,140 +1,322 @@
 import os
 import sys
 import json
+import math
+import csv
+import io
+import random
 import requests
 from datetime import datetime, timedelta, timezone
 
 API_KEY = os.getenv("API_FOOTBALL_KEY")
-if not API_KEY:
-    print("ERROR: Falta API_FOOTBALL_KEY.")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+DOMINIO_WEB = "sergiocdevia-hash.github.io"
+URL_WEB_VIP = f"https://{DOMINIO_WEB}/Arsenal-Master-quant/www/"
+
+if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
+    print("ERROR: Faltan TELEGRAM_TOKEN o TELEGRAM_CHAT_ID.")
     sys.exit(1)
 
-HEADERS = {"x-apisports-key": API_KEY}
-DOMINIO = "v3.football.api-sports.io"
-
-# Las 21 Competiciones VIP Activas (Selecciones + Clubes)
-LIGAS_VIP = {
-    5, 536, 6, 34, 10,
-    2, 3, 39, 40, 140, 141,
-    135, 78, 79, 61, 144,
-    262, 71, 72, 239, 241
+LIGAS_VIP_IDS = {
+    5: "UEFA NATIONS LEAGUE",
+    536: "CONCACAF NATIONS LEAGUE",
+    6: "COPA AFRICANA DE NACIONES",
+    34: "ELIMINATORIAS CONMEBOL",
+    10: "AMISTOSOS INTERNACIONALES",
+    2: "UEFA CHAMPIONS LEAGUE",
+    3: "UEFA EUROPA LEAGUE",
+    39: "PREMIER LEAGUE (INGLATERRA)",
+    40: "CHAMPIONSHIP (INGLATERRA)",
+    140: "LALIGA EA SPORTS (ESPANA)",
+    141: "LALIGA 2 (ESPANA)",
+    135: "SERIE A (ITALIA)",
+    78: "BUNDESLIGA (ALEMANIA)",
+    79: "2. BUNDESLIGA (ALEMANIA)",
+    61: "LIGUE 1 (FRANCIA)",
+    144: "JUPILER PRO LEAGUE (BELGICA)",
+    262: "LIGA MX (MEXICO)",
+    71: "SERIE A (BRASIL)",
+    72: "SERIE B (BRASIL)",
+    239: "LIGA BETPLAY (COLOMBIA)",
+    241: "COPA COLOMBIA"
 }
 
-tz_col = timezone(timedelta(hours=-5))
-ahora_col = datetime.now(tz_col)
-fecha_hoy = ahora_col.strftime("%Y-%m-%d")
-fecha_ayer = (ahora_col - timedelta(days=1)).strftime("%Y-%m-%d")
-hora_actual = ahora_col.hour
 
-if hora_actual < 6:
-    turno = "APERTURA"
-elif hora_actual < 14:
-    turno = "EUROPA"
-else:
-    turno = "AMERICA"
-
-print(f"Iniciando Turno {turno} | Fecha Colombia: {fecha_hoy}")
-
-try:
-    url_hoy = f"https://{DOMINIO}/fixtures?date={fecha_hoy}"
-    resp = requests.get(url_hoy, headers=HEADERS, timeout=25)
-    if resp.status_code != 200:
-        print(f"Error HTTP {resp.status_code}: {resp.text}")
-        sys.exit(1)
-
-    datos = resp.json()
-    if datos.get("errors"):
-        print(f"Error API-Sports: {datos['errors']}")
-        sys.exit(1)
-
-    todos_partidos = datos.get("response", [])
-    partidos_vip = [
-        p for p in todos_partidos
-        if p.get("league", {}).get("id") in LIGAS_VIP
-    ]
-
-    consultas = 1
-    cuotas_cache = {}
-    h2h_cache = {}
-    alineaciones_cache = {}
-    resultados_ayer = {}
-
-    if turno == "APERTURA":
+def cargar_calibracion():
+    ruta = os.path.join("predicciones", "calibracion.json")
+    default = {"peso_modelo": 0.60, "peso_asia": 0.40, "factor_goles": 1.00}
+    if os.path.exists(ruta):
         try:
-            r_ayer = requests.get(f"https://{DOMINIO}/fixtures?date={fecha_ayer}", headers=HEADERS, timeout=15)
-            consultas += 1
-            if r_ayer.status_code == 200:
-                for item in r_ayer.json().get("response", []):
-                    fid_ayer = str(item.get("fixture", {}).get("id", ""))
-                    st_ayer = item.get("fixture", {}).get("status", {}).get("short", "")
-                    goals = item.get("goals", {})
-                    if fid_ayer and st_ayer in ("FT", "AET", "PEN"):
-                        resultados_ayer[fid_ayer] = {
-                            "gl": goals.get("home", 0),
-                            "gv": goals.get("away", 0)
-                        }
-        except Exception as e_aud:
-            print(f"Aviso auditoria ayer: {e_aud}")
-
-    contador_vip = 0
-    for p in partidos_vip:
-        if contador_vip >= 12:
-            break
-        fid = p.get("fixture", {}).get("id")
-        estado = p.get("fixture", {}).get("status", {}).get("short", "")
-        id_loc = p.get("teams", {}).get("home", {}).get("id")
-        id_vis = p.get("teams", {}).get("away", {}).get("id")
-
-        if not fid or estado in ("FT", "AET", "PEN"):
-            continue
-
-        contador_vip += 1
-
-        try:
-            r_odd = requests.get(f"https://{DOMINIO}/odds?fixture={fid}", headers=HEADERS, timeout=10)
-            consultas += 1
-            if r_odd.status_code == 200:
-                odd_list = r_odd.json().get("response", [])
-                primer_odd = next(iter(odd_list), None)
-                if isinstance(primer_odd, dict):
-                    cuotas_cache[str(fid)] = primer_odd.get("bookmakers", [])
+            with open(ruta, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    default.update(data)
         except Exception:
             pass
+    return default
 
-        if turno == "EUROPA":
-            try:
-                r_lin = requests.get(f"https://{DOMINIO}/fixtures/lineups?fixture={fid}", headers=HEADERS, timeout=10)
-                consultas += 1
-                if r_lin.status_code == 200:
-                    lin_list = r_lin.json().get("response", [])
-                    if isinstance(lin_list, list) and len(lin_list) >= 2:
-                        alineaciones_cache[str(fid)] = True
-            except Exception:
-                pass
-        elif id_loc and id_vis:
-            try:
-                r_h2h = requests.get(f"https://{DOMINIO}/fixtures/headtohead?h2h={id_loc}-{id_vis}&last=5", headers=HEADERS, timeout=10)
-                consultas += 1
-                if r_h2h.status_code == 200:
-                    h2h_cache[str(fid)] = r_h2h.json().get("response", [])
-            except Exception:
-                pass
 
-    datos["turno_actual"] = turno
-    datos["cuotas_vip"] = cuotas_cache
-    datos["h2h_vip"] = h2h_cache
-    datos["alineaciones_vip"] = alineaciones_cache
-    datos["resultados_ayer"] = resultados_ayer
+def guardar_calibracion(cal):
+    os.makedirs("predicciones", exist_ok=True)
+    ruta = os.path.join("predicciones", "calibracion.json")
+    try:
+        with open(ruta, "w", encoding="utf-8") as f:
+            json.dump(cal, f, indent=4)
+    except Exception:
+        pass
 
-    carpeta_destino = "predicciones"
-    os.makedirs(carpeta_destino, exist_ok=True)
-    nombre_archivo = os.path.join(carpeta_destino, f"partidos_{fecha_hoy}.json")
 
-    with open(nombre_archivo, "w", encoding="utf-8") as archivo:
-        json.dump(datos, archivo, indent=4, ensure_ascii=False)
+def cargar_cuotas_apertura(fecha_hoy):
+    ruta = os.path.join("predicciones", f"apertura_clv_{fecha_hoy}.json")
+    if os.path.exists(ruta):
+        try:
+            with open(ruta, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, dict):
+                    return data
+        except Exception:
+            pass
+    return {}
 
-    print(f"OK Turno {turno}: {len(partidos_vip)} partidos VIP | Consultas usadas: {consultas}/100")
 
-except Exception as e:
-    print(f"Error critico en motor_api_real.py: {e}")
-    sys.exit(1)
+def guardar_cuotas_apertura(fecha_hoy, registro):
+    os.makedirs("predicciones", exist_ok=True)
+    ruta = os.path.join("predicciones", f"apertura_clv_{fecha_hoy}.json")
+    try:
+        with open(ruta, "w", encoding="utf-8") as f:
+            json.dump(registro, f, indent=4)
+    except Exception:
+        pass
+
+
+def descargar_clubelo():
+    elos = {}
+    try:
+        tz_col = timezone(timedelta(hours=-5))
+        fecha_str = datetime.now(tz_col).strftime("%Y-%m-%d")
+        resp = requests.get(f"http://clubelo.com{fecha_str}", timeout=10)
+        if resp.status_code == 200:
+            reader = csv.DictReader(io.StringIO(resp.text))
+            for row in reader:
+                club = str(row.get("Club", "")).strip().lower()
+                elo = row.get("Elo")
+                if club and elo:
+                    try:
+                        elos[club] = float(elo)
+                    except ValueError:
+                        pass
+    except Exception:
+        pass
+    return elos
+
+
+def buscar_elo(nombre_equipo, mapa_elo):
+    nombre = nombre_equipo.lower().strip()
+    if nombre in mapa_elo:
+        return mapa_elo[nombre]
+    for k, v in mapa_elo.items():
+        if nombre in k or k in nombre:
+            return v
+    return 1500.0
+
+
+def obtener_estadisticas_tabla(id_liga, temporada):
+    if not API_KEY:
+        return {}
+    url = f"https://api-sports.io{id_liga}&season={temporada}"
+    headers = {"x-apisports-key": API_KEY}
+    try:
+        resp = requests.get(url, headers=headers, timeout=12)
+        if resp.status_code != 200:
+            return {}
+        data = resp.json().get("response", [])
+        primer_bloque = next(iter(data), None)
+        if not isinstance(primer_bloque, dict):
+            return {}
+        stats_equipos = {}
+        grupos = primer_bloque.get("league", {}).get("standings", [])
+        for grupo in grupos:
+            for fila in grupo:
+                equipo_id = fila.get("team", {}).get("id")
+                pj = fila.get("all", {}).get("played") or 1
+                gf = fila.get("all", {}).get("goals", {}).get("for", 0)
+                gc = fila.get("all", {}).get("goals", {}).get("against", 0)
+                forma_raw = str(fila.get("form") or "DDDDD")
+                forma = forma_raw[-5:]
+                if equipo_id:
+                    stats_equipos[equipo_id] = {
+                        "ataque": float(gf) / float(pj),
+                        "defensa": float(gc) / float(pj),
+                        "forma": forma
+                    }
+        return stats_equipos
+    except Exception:
+        return {}
+
+
+def factor_forma_real(forma_str):
+    if not forma_str:
+        return 1.0
+    puntos = 0
+    for ch in forma_str:
+        if ch == "W":
+            puntos += 3
+        elif ch == "D":
+            puntos += 1
+    return 0.88 + (puntos / 15.0) * 0.24
+
+
+def analizar_h2h(h2h_list, id_local):
+    if not isinstance(h2h_list, list) or len(h2h_list) == 0:
+        return 1.0, 1.0
+    goles_l = 0
+    goles_v = 0
+    for m in h2h_list:
+        h_id = m.get("teams", {}).get("home", {}).get("id")
+        gh = m.get("goals", {}).get("home") or 0
+        ga = m.get("goals", {}).get("away") or 0
+        if h_id == id_local:
+            goles_l += gh
+            goles_v += ga
+        else:
+            goles_l += ga
+            goles_v += gh
+    n = len(h2h_list)
+    prom_l = goles_l / n
+    prom_v = goles_v / n
+    f_l = max(0.85, min(1.15, 0.90 + (prom_l * 0.08)))
+    f_v = max(0.85, min(1.15, 0.90 + (prom_v * 0.08)))
+    return f_l, f_v
+
+
+def extraer_cuotas_mercado(bookmakers):
+    if not isinstance(bookmakers, list):
+        return None, None
+    asiaticas = ("pinnacle", "sbobet", "188bet")
+    mundiales = ("bet365", "1xbet", "bwin", "william hill")
+    c_asia = None
+    c_mundo = None
+
+    for bm in bookmakers:
+        nombre = str(bm.get("name", "")).lower()
+        for bet in bm.get("bets", []):
+            if bet.get("id") == 1:
+                vals = {}
+                for v in bet.get("values", []):
+                    try:
+                        vals[str(v.get("value"))] = float(v.get("odd"))
+                    except (ValueError, TypeError):
+                        pass
+                if "Home" in vals and "Draw" in vals and "Away" in vals:
+                    terna = (vals["Home"], vals["Draw"], vals["Away"])
+                    if any(a in nombre for a in asiaticas) and not c_asia:
+                        c_asia = terna
+                    elif any(m in nombre for m in mundiales) and not c_mundo:
+                        c_mundo = terna
+                    elif not c_mundo:
+                        c_mundo = terna
+
+    return (c_asia or c_mundo), (c_mundo or c_asia)
+
+
+def devig_probabilidades(terna):
+    o_l, o_e, o_v = terna
+    if o_l <= 0 or o_e <= 0 or o_v <= 0:
+        return 0.34, 0.33, 0.33
+    inv_l = 1.0 / o_l
+    inv_e = 1.0 / o_e
+    inv_v = 1.0 / o_v
+    suma = inv_l + inv_e + inv_v
+    return (inv_l / suma), (inv_e / suma), (inv_v / suma)
+
+
+def simulacion_markov_10k(lambda_l, lambda_v, semilla_id):
+    rng = random.Random(semilla_id)
+    pesos_bloques = (0.13, 0.15, 0.17, 0.16, 0.18, 0.21)
+
+    wins_l = 0
+    draws = 0
+    wins_v = 0
+    empate_goles_count = 0
+    btts_count = 0
+    under25_count = 0
+    escenarios = 10000
+
+    for _ in range(escenarios):
+        gl = 0
+        gv = 0
+        for peso in pesos_bloques:
+            mod_l = 1.08 if gl < gv else (0.94 if gl > gv else 1.0)
+            mod_v = 1.08 if gv < gl else (0.94 if gv > gl else 1.0)
+            if rng.random() < (lambda_l * peso * mod_l):
+                gl += 1
+            if rng.random() < (lambda_v * peso * mod_v):
+                gv += 1
+
+        if gl > gv:
+            wins_l += 1
+        elif gl < gv:
+            wins_v += 1
+        else:
+            draws += 1
+            if gl >= 1:
+                empate_goles_count += 1
+
+        if gl >= 1 and gv >= 1:
+            btts_count += 1
+        if (gl + gv) <= 2:
+            under25_count += 1
+
+    return (
+        wins_l / escenarios,
+        draws / escenarios,
+        wins_v / escenarios,
+        empate_goles_count / escenarios,
+        btts_count / escenarios,
+        under25_count / escenarios
+    )
+
+
+def calcular_entropia(p_l, p_e, p_v):
+    entropia = 0.0
+    for p in (p_l, p_e, p_v):
+        if p > 0.0001:
+            entropia -= p * math.log2(p)
+    return entropia
+
+
+def calcular_kelly(prob_algoritmo, cuota_mercado):
+    if cuota_mercado <= 1.05:
+        return 0.0
+    b = cuota_mercado - 1.0
+    q = 1.0 - prob_algoritmo
+    f_kelly = ((b * prob_algoritmo) - q) / b
+    return round(max(0.0, min(f_kelly * 0.25 * 100.0, 3.50)), 2)
+
+
+def cargar_historial_ayer(fecha_ayer):
+    fechas = {}
+    ruta_ayer = os.path.join("predicciones", f"partidos_{fecha_ayer}.json")
+    if os.path.exists(ruta_ayer):
+        try:
+            with open(ruta_ayer, "r", encoding="utf-8") as f:
+                data_ayer = json.load(f)
+            for item in data_ayer.get("response", []):
+                f_iso = str(item.get("fixture", {}).get("date", ""))
+                try:
+                    dt_u = datetime.fromisoformat(f_iso.replace("Z", "+00:00"))
+                    h_id = item.get("teams", {}).get("home", {}).get("id")
+                    a_id = item.get("teams", {}).get("away", {}).get("id")
+                    if h_id:
+                        fechas[h_id] = dt_u
+                    if a_id:
+                        fechas[a_id] = dt_u
+                except Exception:
+                    pass
+        except Exception:
+            pass
+    return fechas
+
+
+def auditar_y_calibrar(resultados_ayer, cal):
