@@ -1,8 +1,10 @@
-name: Motor Arsenal Flashscore Diario
+name: Arsenal Master Quant V18.1
 
 on:
   schedule:
     - cron: '0 5 * * *'
+    - cron: '30 12 * * *'
+    - cron: '30 21 * * *'
   workflow_dispatch:
 
 permissions:
@@ -26,13 +28,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: 1. Descargar Partidos Reales API
+      - name: 1. Descargar Partidos, Cuotas y Contexto Real
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
         run: |
           python motor_api_real.py
 
-      - name: 2. Analizar y Publicar en Telegram
+      - name: 2. Ejecutar Cerebro V18.1 y Enviar a Telegram
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -45,6 +47,8 @@ jobs:
           git config --local user.email "github-actions[bot]@://github.com"
           git config --local user.name "github-actions[bot]"
           git add predicciones/ www/
-          git commit -m "Cartelera y alerta Telegram [Automation]" || exit 0
-          git pull --rebase origin main
-          git push
+          if ! git diff --staged --quiet; then
+            git commit -m "Cartelera V18.1 Completa [Automation]"
+            git pull --rebase origin main || true
+            git push
+          fi
