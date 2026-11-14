@@ -1,12 +1,4 @@
-import os
-import sys
-import json
-import math
-import csv
-import io
-import html
-import random
-import requests
+import os, sys, json, math, csv, io, html, random, requests
 from datetime import datetime, timedelta, timezone
 from google import genai
 from google.genai import types
@@ -85,6 +77,8 @@ def buscar_elo(nombre_equipo, mapa_elo):
         if nombre in k or k in nombre:
             return v
     return 1500.0
+
+
 def obtener_tabla(id_liga, temporada):
     if not API_KEY:
         return {}
@@ -134,8 +128,6 @@ def analizar_h2h(h2h_list, id_local):
             gv += gh
     n = len(h2h_list)
     return max(0.85, min(1.15, 0.90 + (gl / n) * 0.08)), max(0.85, min(1.15, 0.90 + (gv / n) * 0.08))
-
-
 def extraer_cuotas(bookmakers):
     if not isinstance(bookmakers, list):
         return None, None
@@ -166,9 +158,7 @@ def de_vigging(terna):
         return None
     inv = [1.0 / c for c in terna]
     overround = sum(inv)
-    if overround <= 0:
-        return None
-    return [round(p / overround, 4) for p in inv]
+    return [round(p / overround, 4) for p in inv] if overround > 0 else None
 
 
 def simulacion_markov_10k(lambda_l, lambda_v, semilla_id):
@@ -184,26 +174,17 @@ def simulacion_markov_10k(lambda_l, lambda_v, semilla_id):
                 gl += 1
             if rng.random() < lambda_v * p * mv:
                 gv += 1
-        if gl > gv:
-            wl += 1
-        elif gl < gv:
-            wv += 1
-        else:
-            dr += 1
-        if gl >= 1:
-            og += 1
-        if gl >= 1 and gv >= 1:
-            btts += 1
-        if gl + gv <= 2:
-            u25 += 1
+        if gl > gv: wl += 1
+        elif gl < gv: wv += 1
+        else: dr += 1
+        if gl >= 1: og += 1
+        if gl >= 1 and gv >= 1: btts += 1
+        if gl + gv <= 2: u25 += 1
     return wl / 10000.0, dr / 10000.0, wv / 10000.0, og / 10000.0, btts / 10000.0, u25 / 10000.0
 
 
 def calcular_entropia_shannon(probs):
-    h = 0.0
-    for p in probs:
-        if p > 0:
-            h -= p * math.log2(p)
+    h = sum(-p * math.log2(p) for p in probs if p > 0)
     return round(h / math.log2(len(probs)), 3)
 
 
@@ -211,13 +192,11 @@ def criterio_kelly(prob_real, cuota, fraccion=0.25, tope=3.5):
     if not cuota or cuota <= 1.01 or prob_real <= 0:
         return 0.0
     b = cuota - 1.0
-    q = 1.0 - prob_real
-    f_star = ((b * prob_real) - q) / b
-    if f_star <= 0:
-        return 0.0
-    stake = f_star * fraccion * 100.0
-    return round(min(tope, max(0.5, stake)), 2)
-    def auditar_y_calibrar(resultados_ayer, cal):
+    f_star = ((b * prob_real) - (1.0 - prob_real)) / b
+    return round(min(tope, max(0.5, f_star * fraccion * 100.0)), 2) if f_star > 0 else 0.0
+
+
+def auditar_y_calibrar(resultados_ayer, cal):
     if not resultados_ayer or not os.path.exists("www/data/partidos_del_dia.json"):
         return ""
     previa = cargar_json("www/data/partidos_del_dia.json", {})
@@ -239,7 +218,6 @@ def criterio_kelly(prob_real, cuota, fraccion=0.25, tope=3.5):
                 ("BTTS" in pred and gl >= 1 and gv >= 1) or
                 ("UNDER" in pred and gl + gv <= 2)):
                 ok_cnt += 1
-
     if eval_cnt > 0:
         pct = (ok_cnt / eval_cnt) * 100.0
         if pct < 55.0:
@@ -249,13 +227,10 @@ def criterio_kelly(prob_real, cuota, fraccion=0.25, tope=3.5):
             cal["peso_modelo"] = min(0.70, round(cal.get("peso_modelo", 0.60) + 0.02, 2))
             cal["peso_asia"] = round(1.0 - cal["peso_modelo"], 2)
         guardar_json("predicciones/calibracion.json", cal)
-
         historial = cargar_json("www/data/historial_aciertos.json", {"registros": []})
         historial["registros"].append({
             "fecha": datetime.now(timezone(timedelta(hours=-5))).strftime("%Y-%m-%d"),
-            "evaluados": eval_cnt,
-            "aciertos": ok_cnt,
-            "efectividad": round(pct, 1)
+            "evaluados": eval_cnt, "aciertos": ok_cnt, "efectividad": round(pct, 1)
         })
         guardar_json("www/data/historial_aciertos.json", historial)
         return f"📊 Auditoría Ayer: {ok_cnt}/{eval_cnt} aciertos ({pct:.1f}%)\n"
@@ -282,8 +257,7 @@ def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
         )
         try:
             resp = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt,
+                model="gemini-2.5-flash", contents=prompt,
                 config=types.GenerateContentConfig(temperature=0.2)
             )
             txt = (resp.text or "").strip()
@@ -293,61 +267,42 @@ def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
         except Exception as e:
             votos_ok += 1
             notas.append(f"{etiqueta}: Sin novedad ({str(e)[:30]})")
-    aprobado = votos_ok >= 2
-    return aprobado, " | ".join(notas)
-    def analizar_partido(p, elos, tablas, cal):
+    return (votos_ok >= 2), " | ".join(notas)
+      def analizar_partido(p, elos, tablas, cal):
     fix = p.get("fixture", {})
     fid = str(fix.get("id", ""))
     fecha_iso = fix.get("date", "")
     liga_info = p.get("league", {})
     lid = liga_info.get("id")
     liga_nom = LIGAS_VIP_IDS.get(lid, liga_info.get("name", "Liga VIP"))
-
     teams = p.get("teams", {})
-    loc_info = teams.get("home", {})
-    vis_info = teams.get("away", {})
-    loc_id = loc_info.get("id")
-    vis_id = vis_info.get("id")
-    loc = loc_info.get("name", "Local")
-    vis = vis_info.get("name", "Visitante")
+    loc_info, vis_info = teams.get("home", {}), teams.get("away", {})
+    loc_id, vis_id = loc_info.get("id"), vis_info.get("id")
+    loc, vis = loc_info.get("name", "Local"), vis_info.get("name", "Visitante")
 
-    elo_l = buscar_elo(loc, elos)
-    elo_v = buscar_elo(vis, elos)
-    diff_elo = (elo_l + 65.0) - elo_v
-
+    diff_elo = (buscar_elo(loc, elos) + 65.0) - buscar_elo(vis, elos)
     tabla_liga = tablas.get(lid, {})
     st_l = tabla_liga.get(loc_id, {"ataque": 1.35, "defensa": 1.25, "forma": "DDDDD"})
     st_v = tabla_liga.get(vis_id, {"ataque": 1.15, "defensa": 1.35, "forma": "DDDDD"})
-
     h2h_l, h2h_v = analizar_h2h(p.get("h2h", []), loc_id)
-    f_l = factor_forma(st_l["forma"])
-    f_v = factor_forma(st_v["forma"])
-
+    f_l, f_v = factor_forma(st_l["forma"]), factor_forma(st_v["forma"])
     aj_elo_l = max(0.75, min(1.30, 1.0 + diff_elo / 900.0))
     aj_elo_v = max(0.75, min(1.30, 1.0 - diff_elo / 900.0))
 
     lambda_l = max(0.35, min(3.4, ((st_l["ataque"] + st_v["defensa"]) / 2.0) * 1.10 * aj_elo_l * f_l * h2h_l))
     lambda_v = max(0.30, min(3.1, ((st_v["ataque"] + st_l["defensa"]) / 2.0) * 0.92 * aj_elo_v * f_v * h2h_v))
+    p_l, p_e, p_v, _, _, _ = simulacion_markov_10k(lambda_l, lambda_v, int(fid) if fid.isdigit() else 42)
 
-    semilla = int(fid) if fid.isdigit() else 42
-    p_l, p_e, p_v, p_ov, p_bt, p_u25 = simulacion_markov_10k(lambda_l, lambda_v, semilla)
-
-    bms = p.get("bookmakers", [])
-    c_asia, c_mundo = extraer_cuotas(bms)
-    if not c_asia:
-        return None
-
-    probs_asia = de_vigging([c_asia["Home"], c_asia["Draw"], c_asia["Away"]])
+    c_asia, c_mundo = extraer_cuotas(p.get("bookmakers", []))
+    probs_asia = de_vigging([c_asia["Home"], c_asia["Draw"], c_asia["Away"]]) if c_asia else None
     if not probs_asia:
         return None
 
     p_asia_l, p_asia_e, p_asia_v = probs_asia
-    w_a = cal.get("peso_asia", 0.45)
-    w_m = cal.get("peso_modelo", 0.55)
+    w_a, w_m = cal.get("peso_asia", 0.45), cal.get("peso_modelo", 0.55)
     prob_l = round(w_a * p_asia_l + w_m * p_l, 4)
     prob_e = round(w_a * p_asia_e + w_m * p_e, 4)
     prob_v = round(w_a * p_asia_v + w_m * p_v, 4)
-
     entropia = calcular_entropia_shannon([prob_l, prob_e, prob_v])
     if entropia > 0.96:
         return None
@@ -358,18 +313,11 @@ def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
     elif c_mundo and c_asia["Away"] < c_mundo["Away"] * 0.92:
         steam_alerta = "Caída fuerte cuota Visitante en Asia"
 
-    opciones = [
-        ("LOCAL", prob_l, c_asia["Home"]),
-        ("EMPATE CON GOLES", prob_e, c_asia["Draw"]),
-        ("VISITANTE", prob_v, c_asia["Away"]),
-    ]
     mejor = None
-    for nombre_m, pr, ct in opciones:
+    for nombre_m, pr, ct in [("LOCAL", prob_l, c_asia["Home"]), ("EMPATE CON GOLES", prob_e, c_asia["Draw"]), ("VISITANTE", prob_v, c_asia["Away"])]:
         ev = (pr * ct) - 1.0
-        if ev >= 0.04 and pr >= 0.42:
-            if not mejor or ev > mejor:
-                mejor = (nombre_m, pr, ct, ev)
-
+        if ev >= 0.04 and pr >= 0.42 and (not mejor or ev > mejor):
+            mejor = (nombre_m, pr, ct, ev)
     if not mejor:
         return None
 
@@ -383,48 +331,29 @@ def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
         return None
 
     return {
-        "fixture_id": fid,
-        "fecha": fecha_iso,
-        "liga": liga_nom,
-        "local": loc,
-        "visitante": vis,
-        "prediccion": pred_txt,
-        "probabilidad": round(prob_final * 100, 1),
-        "cuota": cuota_final,
-        "ev": round(ev_final * 100, 1),
-        "stake": stake,
-        "entropia": entropia,
-        "resumen_ia": resumen_ia
+        "fixture_id": fid, "fecha": fecha_iso, "liga": liga_nom,
+        "local": loc, "visitante": vis, "prediccion": pred_txt,
+        "probabilidad": round(prob_final * 100, 1), "cuota": cuota_final,
+        "ev": round(ev_final * 100, 1), "stake": stake,
+        "entropia": entropia, "resumen_ia": resumen_ia
     }
 
 
 def enviar_telegram(mensaje_html):
     url = f"https://telegram.org{TELEGRAM_TOKEN}/sendMessage"
     max_len = 3800
-    partes = []
-    texto_restante = mensaje_html
-
+    partes, texto_restante = [], mensaje_html
     while len(texto_restante) > max_len:
         corte = texto_restante.rfind("\n\n", 0, max_len)
-        if corte == -1:
-            corte = texto_restante.rfind("\n", 0, max_len)
-        if corte == -1:
-            corte = max_len
+        if corte == -1: corte = texto_restante.rfind("\n", 0, max_len)
+        if corte == -1: corte = max_len
         partes.append(texto_restante[:corte].strip())
         texto_restante = texto_restante[corte:].strip()
-
     if texto_restante:
         partes.append(texto_restante)
-
     for idx, parte in enumerate(partes, 1):
-        payload = {
-            "chat_id": TELEGRAM_CHAT_ID,
-            "text": parte,
-            "parse_mode": "HTML",
-            "disable_web_page_preview": True
-        }
         try:
-            resp = requests.post(url, json=payload, timeout=15)
+            resp = requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": parte, "parse_mode": "HTML", "disable_web_page_preview": True}, timeout=15)
             if resp.status_code != 200:
                 print(f"Error respuesta Telegram parte {idx} ({resp.status_code}): {resp.text}")
             else:
@@ -449,8 +378,7 @@ def main():
     partidos_raw = data_hoy.get("partidos", []) if isinstance(data_hoy, dict) else []
     elos = descargar_clubelo(fecha_hoy)
 
-    ligas_presentes = set()
-    temporadas = {}
+    ligas_presentes, temporadas = set(), {}
     for p in partidos_raw:
         lg = p.get("league", {})
         if lg.get("id"):
@@ -458,38 +386,31 @@ def main():
             temporadas[lg["id"]] = lg.get("season", ahora.year)
 
     tablas = {lid: obtener_tabla(lid, temporadas[lid]) for lid in ligas_presentes}
-
     seleccionados = {}
     for p in partidos_raw:
         tarjeta = analizar_partido(p, elos, tablas, cal)
         if tarjeta:
             seleccionados[tarjeta["fixture_id"]] = tarjeta
 
-    salida_web = {
+    guardar_json("www/data/partidos_del_dia.json", {
         "actualizado": ahora.strftime("%Y-%m-%d %H:%M COL"),
-        "calibracion": cal,
-        "total": len(seleccionados),
-        "partidos": seleccionados
-    }
-    guardar_json("www/data/partidos_del_dia.json", salida_web)
+        "calibracion": cal, "total": len(seleccionados), "partidos": seleccionados
+    })
 
     lineas = [f"<b>⚡ ARSENAL MASTER QUANT V18.1</b> ({fecha_hoy})\n"]
     if resumen_auditoria:
         lineas.append(html.escape(resumen_auditoria))
-
     if not seleccionados:
         lineas.append("Sin señales con valor matemático positivo (+EV) tras filtrar entropía y comité IA.")
     else:
         for t in seleccionados.values():
-            bloque = (
+            lineas.append(
                 f"🏆 <b>{html.escape(t['liga'])}</b>\n"
                 f"⚽ {html.escape(t['local'])} vs {html.escape(t['visitante'])}\n"
                 f"🎯 Pick: <b>{html.escape(t['prediccion'])}</b> @ {t['cuota']}\n"
                 f"📊 Prob: {t['probabilidad']}% | EV: +{t['ev']}% | Stake: {t['stake']}%\n"
                 f"🤖 {html.escape(t['resumen_ia'])}\n"
             )
-            lineas.append(bloque)
-
     lineas.append(f"🌐 Panel en vivo: {URL_WEB_VIP}")
     enviar_telegram("\n".join(lineas))
     print(f"Proceso completado. Picks enviados: {len(seleccionados)}")
@@ -497,4 +418,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
