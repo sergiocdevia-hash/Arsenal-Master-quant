@@ -7,7 +7,7 @@ API_KEY = (os.getenv("API_FOOTBALL_KEY") or "").strip()
 GEMINI_KEY = (os.getenv("GEMINI_API_KEY") or "").strip()
 TELEGRAM_TOKEN = (os.getenv("TELEGRAM_TOKEN") or "").strip()
 TELEGRAM_CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
-URL_WEB_VIP = "https://github.io"
+URL_WEB_VIP = "https://sergiocdevia-hash." + "github.io/Arsenal-Master-quant/"
 
 if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
     print("ERROR: Faltan credenciales de Telegram.")
@@ -54,7 +54,8 @@ def guardar_json(ruta, data):
 def descargar_clubelo(fecha_str):
     elos = {}
     try:
-        resp = requests.get(f"http://clubelo.com{fecha_str}", timeout=10)
+        url_elo = "http://api." + f"://clubelo.com{fecha_str}"
+        resp = requests.get(url_elo, timeout=10)
         if resp.status_code == 200:
             for row in csv.DictReader(io.StringIO(resp.text)):
                 club = str(row.get("Club", "")).strip().lower()
@@ -82,7 +83,7 @@ def buscar_elo(nombre_equipo, mapa_elo):
 def obtener_tabla(id_liga, temporada):
     if not API_KEY:
         return {}
-    url = f"https://api-sports.io{id_liga}&season={temporada}"
+    url = "https://v3.football." + f"api-sports.io/standings?league={id_liga}&season={temporada}"
     try:
         resp = requests.get(url, headers={"x-apisports-key": API_KEY}, timeout=12)
         if resp.status_code != 200:
@@ -268,7 +269,7 @@ def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
             votos_ok += 1
             notas.append(f"{etiqueta}: Sin novedad ({str(e)[:30]})")
     return (votos_ok >= 2), " | ".join(notas)
-      def analizar_partido(p, elos, tablas, cal):
+  def analizar_partido(p, elos, tablas, cal):
     fix = p.get("fixture", {})
     fid = str(fix.get("id", ""))
     fecha_iso = fix.get("date", "")
@@ -340,7 +341,7 @@ def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
 
 
 def enviar_telegram(mensaje_html):
-    url = f"https://telegram.org{TELEGRAM_TOKEN}/sendMessage"
+    url = "https://api." + f"telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     max_len = 3800
     partes, texto_restante = [], mensaje_html
     while len(texto_restante) > max_len:
@@ -418,3 +419,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+      
