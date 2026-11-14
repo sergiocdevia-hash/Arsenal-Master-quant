@@ -42,6 +42,7 @@ LIGAS_VIP_IDS = {
     241: "COPA COLOMBIA"
 }
 
+
 def cargar_calibracion():
     ruta = os.path.join("predicciones", "calibracion.json")
     default = {"peso_modelo": 0.60, "peso_asia": 0.40, "factor_goles": 1.00}
@@ -55,6 +56,7 @@ def cargar_calibracion():
             pass
     return default
 
+
 def guardar_calibracion(cal):
     os.makedirs("predicciones", exist_ok=True)
     ruta = os.path.join("predicciones", "calibracion.json")
@@ -63,6 +65,7 @@ def guardar_calibracion(cal):
             json.dump(cal, f, indent=4)
     except Exception:
         pass
+
 
 def cargar_cuotas_apertura(fecha_hoy):
     ruta = os.path.join("predicciones", f"apertura_clv_{fecha_hoy}.json")
@@ -76,6 +79,7 @@ def cargar_cuotas_apertura(fecha_hoy):
             pass
     return {}
 
+
 def guardar_cuotas_apertura(fecha_hoy, registro):
     os.makedirs("predicciones", exist_ok=True)
     ruta = os.path.join("predicciones", f"apertura_clv_{fecha_hoy}.json")
@@ -84,6 +88,7 @@ def guardar_cuotas_apertura(fecha_hoy, registro):
             json.dump(registro, f, indent=4)
     except Exception:
         pass
+
 
 def descargar_clubelo():
     elos = {}
@@ -105,6 +110,7 @@ def descargar_clubelo():
         pass
     return elos
 
+
 def buscar_elo(nombre_equipo, mapa_elo):
     nombre = nombre_equipo.lower().strip()
     if nombre in mapa_elo:
@@ -113,6 +119,7 @@ def buscar_elo(nombre_equipo, mapa_elo):
         if nombre in k or k in nombre:
             return v
     return 1500.0
+
 
 def obtener_estadisticas_tabla(id_liga, temporada):
     if not API_KEY:
@@ -147,6 +154,7 @@ def obtener_estadisticas_tabla(id_liga, temporada):
     except Exception:
         return {}
 
+
 def factor_forma_real(forma_str):
     if not forma_str:
         return 1.0
@@ -157,6 +165,7 @@ def factor_forma_real(forma_str):
         elif ch == "D":
             puntos += 1
     return 0.88 + (puntos / 15.0) * 0.24
+
 
 def analizar_h2h(h2h_list, id_local):
     if not isinstance(h2h_list, list) or len(h2h_list) == 0:
@@ -179,6 +188,7 @@ def analizar_h2h(h2h_list, id_local):
     f_l = max(0.85, min(1.15, 0.90 + (prom_l * 0.08)))
     f_v = max(0.85, min(1.15, 0.90 + (prom_v * 0.08)))
     return f_l, f_v
+
 
 def extraer_cuotas_mercado(bookmakers):
     if not isinstance(bookmakers, list):
@@ -209,6 +219,7 @@ def extraer_cuotas_mercado(bookmakers):
 
     return (c_asia or c_mundo), (c_mundo or c_asia)
 
+
 def devig_probabilidades(terna):
     o_l, o_e, o_v = terna
     if o_l <= 0 or o_e <= 0 or o_v <= 0:
@@ -218,6 +229,7 @@ def devig_probabilidades(terna):
     inv_v = 1.0 / o_v
     suma = inv_l + inv_e + inv_v
     return (inv_l / suma), (inv_e / suma), (inv_v / suma)
+
 
 def simulacion_markov_10k(lambda_l, lambda_v, semilla_id):
     rng = random.Random(semilla_id)
@@ -265,12 +277,14 @@ def simulacion_markov_10k(lambda_l, lambda_v, semilla_id):
         under25_count / escenarios
     )
 
+
 def calcular_entropia(p_l, p_e, p_v):
     entropia = 0.0
     for p in (p_l, p_e, p_v):
         if p > 0.0001:
             entropia -= p * math.log2(p)
     return entropia
+
 
 def calcular_kelly(prob_algoritmo, cuota_mercado):
     if cuota_mercado <= 1.05:
@@ -279,6 +293,7 @@ def calcular_kelly(prob_algoritmo, cuota_mercado):
     q = 1.0 - prob_algoritmo
     f_kelly = ((b * prob_algoritmo) - q) / b
     return round(max(0.0, min(f_kelly * 0.25 * 100.0, 3.50)), 2)
+
 
 def cargar_historial_ayer(fecha_ayer):
     fechas = {}
@@ -302,5 +317,6 @@ def cargar_historial_ayer(fecha_ayer):
         except Exception:
             pass
     return fechas
+
 
 def auditar_y_calibrar(resultados_ayer, cal):
