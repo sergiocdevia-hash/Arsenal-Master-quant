@@ -55,7 +55,7 @@ def guardar_json(ruta, data):
 def descargar_clubelo(fecha_str):
     elos = {}
     try:
-        url_elo = "http://api." + f"://clubelo.com{fecha_str}"
+        url_elo = f"http://api.clubelo.com{fecha_str}"
         resp = requests.get(url_elo, timeout=10)
         if resp.status_code == 200:
             for row in csv.DictReader(io.StringIO(resp.text)):
@@ -349,7 +349,7 @@ def analizar_partido(p, elos, tablas, cal):
 
 
 def enviar_telegram(mensaje_html):
-    url = f"https://telegram.org{TELEGRAM_TOKEN}/sendMessage"
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     max_len = 3800
     partes, texto_restante = [], mensaje_html
     while len(texto_restante) > max_len:
