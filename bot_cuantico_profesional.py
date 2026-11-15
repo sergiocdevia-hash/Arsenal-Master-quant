@@ -8,7 +8,7 @@ GEMINI_KEY = (os.getenv("GEMINI_API_KEY") or "").strip()
 import re
 TELEGRAM_TOKEN = re.sub(r"[^0-9A-Za-z:_-]", "", os.getenv("TELEGRAM_TOKEN") or "")
 TELEGRAM_CHAT_ID = re.sub(r"[^0-9-]", "", os.getenv("TELEGRAM_CHAT_ID") or "")
-URL_WEB_VIP = "https://sergiocdevia-hash." + "github.io/Arsenal-Master-quant/"
+URL_WEB_VIP = "https://sergiocdevia-hash." + "github.io/Arsenal-Master-quant/www/"
 
 if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
     print("ERROR: Faltan credenciales de Telegram.")
