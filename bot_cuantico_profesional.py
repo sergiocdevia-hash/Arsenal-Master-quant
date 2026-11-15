@@ -269,7 +269,7 @@ def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
             votos_ok += 1
             notas.append(f"{etiqueta}: Sin novedad ({str(e)[:30]})")
     return (votos_ok >= 2), " | ".join(notas)
-  def analizar_partido(p, elos, tablas, cal):
+ def analizar_partido(p, elos, tablas, cal):
     fix = p.get("fixture", {})
     fid = str(fix.get("id", ""))
     fecha_iso = fix.get("date", "")
