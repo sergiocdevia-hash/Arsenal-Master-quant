@@ -305,7 +305,7 @@ def analizar_partido(p, elos, tablas, cal):
     prob_l = round(w_a * p_asia_l + w_m * p_l, 4)
     prob_e = round(w_a * p_asia_e + w_m * p_e, 4)
     prob_v = round(w_a * p_asia_v + w_m * p_v, 4)
-    entropia = round(entropia_shannon((prob_l, prob_e, prob_v)), 4)
+    entropia = round(-sum(p * math.log(max(p, 1e-9)) for p in (prob_l, prob_e, prob_v)) / math.log(3), 4)
     if entropia > 0.99:
         return None
 
