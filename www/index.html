@@ -34,10 +34,6 @@
     .white { color: #ffffff; }
     .gold { color: #facc15; }
     .red { color: #f87171; }
-    .ia-box {
-      margin-top: 10px; padding-top: 10px; border-top: 1px dashed #163245;
-      font-size: 12px; color: #cbd5e1; line-height: 1.4;
-    }
     .loading { text-align: center; color: #00f0c8; padding: 40px 10px; }
   </style>
 </head>
@@ -51,34 +47,41 @@
   <script>
     async function cargarCartelera() {
       try {
-        const res = await fetch('datos/partidos_del_dia.json?v=' + Date.now());
+        let res = await fetch('datos/partidos_del_dia.json?v=' + Date.now());
+        if (!res.ok) res = await fetch('data/partidos_del_dia.json?v=' + Date.now());
         const data = await res.json();
+
         const cont = document.getElementById('contenedor');
         cont.className = '';
         cont.innerHTML = '';
 
-        const listaPartidos = Object.values(data.partidos || {});
-        if (listaPartidos.length === 0) {
-          document.getElementById('subtitulo').innerText = `Actualizado: ${data.actualizado || 'Hoy'} • 0 Partidos con +EV`;
+        let lista = [];
+        if (Array.isArray(data.partidos)) {
+          lista = data.partidos;
+        } else if (data.partidos && typeof data.partidos === 'object') {
+          lista = Object.values(data.partidos);
+        } else {
+          Object.entries(data).forEach(([k, v]) => {
+            if (Array.isArray(v)) v.forEach(p => lista.push({ ...p, liga: p.liga || k }));
+          });
+        }
+
+        if (lista.length === 0) {
+          document.getElementById('subtitulo').innerText = '0 Ligas Activas • 0 Partidos Analizados';
           cont.className = 'loading';
-          cont.innerText = 'Sin señales con valor matemático positivo (+EV) tras filtrar entropía y comité IA.';
+          cont.innerText = 'Sin señales con valor matemático positivo (+EV) en este corte.';
           return;
         }
 
-        // Agrupar partidos por liga manteniendo el diseño desplegable
-        const porLiga = {};
-        listaPartidos.forEach(p => {
-          const nombreLiga = p.liga || 'LIGA VIP';
-          if (!porLiga[nombreLiga]) porLiga[nombreLiga] = [];
-          porLiga[nombreLiga].push(p);
+        const porLiga = new Map();
+        lista.forEach(p => {
+          const l = p.liga || 'LIGA VIP';
+          if (!porLiga.has(l)) porLiga.set(l, []);
+          porLiga.get(l).push(p);
         });
 
-        const ligas = Object.keys(porLiga);
-        let total = listaPartidos.length;
-
-        ligas.forEach((liga, idx) => {
-          const partidos = porLiga[liga];
-
+        let idx = 0;
+        porLiga.forEach((partidos, liga) => {
           const btn = document.createElement('button');
           btn.className = 'liga-btn';
           btn.innerHTML = `<span>${liga}</span><span class="count">[ ${partidos.length} PARTIDOS ]</span>`;
@@ -86,37 +89,33 @@
           const box = document.createElement('div');
           box.className = 'partidos-box';
           if (idx === 0) box.classList.add('open');
-
           btn.onclick = () => box.classList.toggle('open');
 
           partidos.forEach(p => {
-            const horaCol = (p.fecha && p.fecha.includes('T')) ? p.fecha.split('T')[1].substring(0, 5) : '';
-            const evColor = (p.ev >= 5) ? 'cyan' : 'gold';
-            const entropiaColor = (p.entropia <= 0.65) ? 'cyan' : 'gold';
-
+            const horaCol = (p.fecha && p.fecha.includes('T')) ? p.fecha.split('T').pop().slice(0, 5) : (p.hora || '');
             box.innerHTML += `
               <div class="card">
                 <div class="match-title">
-                  <span>${p.local} VS ${p.visitante}</span>
+                  <span>| ${p.local} VS ${p.visitante}</span>
                   <span class="match-time">${horaCol ? horaCol + ' COL' : ''}</span>
                 </div>
                 <div class="row"><span class="label">📋 PREDICCIÓN ARSENAL:</span><span class="val cyan">[${p.prediccion}]</span></div>
-                <div class="row"><span class="label">💰 CUOTA REAL MULTIBARRIDO:</span><span class="val white">${Number(p.cuota).toFixed(2)}</span></div>
-                <div class="row"><span class="label">🧠 PROBABILIDAD BAYESIANA:</span><span class="val white">${p.probabilidad}%</span></div>
-                <div class="row"><span class="label">📈 VALOR ESPERADO (+EV):</span><span class="val ${evColor}">+${p.ev}%</span></div>
-                <div class="row"><span class="label">💵 GESTIÓN DE CAPITAL:</span><span class="val gold">Stake Kelly: ${p.stake}%</span></div>
-                <div class="row"><span class="label">🌀 ENTROPÍA DEL MERCADO:</span><span class="val ${entropiaColor}">${p.entropia}</span></div>
-                <div class="row"><span class="label">⚡ CONTEXTO VIVO:</span><span class="val cyan">[MOTOR QUANT V18.1 ON]</span></div>
-                ${p.resumen_ia ? `<div class="ia-box">🤖 <strong>COMITÉ IA:</strong> ${p.resumen_ia}</div>` : ''}
+                <div class="row"><span class="label">💰 CUOTA REAL MULTIBARRIDO:</span><span class="val white">${Number(p.cuota || 0).toFixed(2)}</span></div>
+                <div class="row"><span class="label">🧠 PROBABILIDAD BAYESIANA:</span><span class="val white">${p.probabilidad || 0}%</span></div>
+                <div class="row"><span class="label">📈 VALOR ESPERADO (+EV):</span><span class="val cyan">+${p.ev || 0}%</span></div>
+                <div class="row"><span class="label">💵 GESTIÓN DE CAPITAL:</span><span class="val gold">Stake Kelly: ${p.stake || 0}%</span></div>
+                <div class="row"><span class="label">🌀 ENTROPÍA DEL MERCADO:</span><span class="val white">${p.entropia || 0}</span></div>
+                ${p.resumen_ia ? `<div class="row"><span class="label">🤖 COMITÉ IA:</span><span class="val white">${p.resumen_ia}</span></div>` : ''}
               </div>
             `;
           });
 
           cont.appendChild(btn);
           cont.appendChild(box);
+          idx++;
         });
 
-        document.getElementById('subtitulo').innerText = `${ligas.length} Ligas Activas • ${total} Partidos Analizados (${data.actualizado || ''})`;
+        document.getElementById('subtitulo').innerText = `${porLiga.size} Ligas Activas • ${lista.length} Partidos Analizados`;
       } catch (e) {
         document.getElementById('contenedor').innerText = 'Error cargando los partidos del día.';
       }
