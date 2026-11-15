@@ -305,21 +305,59 @@ def analizar_partido(p, elos, tablas, cal):
     prob_l = round(w_a * p_asia_l + w_m * p_l, 4)
     prob_e = round(w_a * p_asia_e + w_m * p_e, 4)
     prob_v = round(w_a * p_asia_v + w_m * p_v, 4)
-    entropia = calcular_entropia_shannon([prob_l, prob_e, prob_v])
-    if entropia > 0.96:
+    entropia = round(entropia_shannon((prob_l, prob_e, prob_v)), 4)
+    if entropia > 0.99:
         return None
 
     steam_alerta = "Normal"
     if c_mundo and c_asia["Home"] < c_mundo["Home"] * 0.92:
-        steam_alerta = "Caída fuerte cuota local en Asia"
+        steam_alerta = "Caída fuerte cuota Local en Asia"
     elif c_mundo and c_asia["Away"] < c_mundo["Away"] * 0.92:
         steam_alerta = "Caída fuerte cuota Visitante en Asia"
 
+    p_gol_l = 1.0 - math.exp(-lambda_l)
+    p_gol_v = 1.0 - math.exp(-lambda_v)
+    prob_btts_si = round(p_gol_l * p_gol_v, 4)
+    prob_btts_no = round(1.0 - prob_btts_si, 4)
+
+    lam_tot = lambda_l + lambda_v
+    p0 = math.exp(-lam_tot)
+    p1 = p0 * lam_tot
+    p2 = p1 * lam_tot / 2.0
+    prob_under25 = round(p0 + p1 + p2, 4)
+    prob_over25 = round(1.0 - prob_under25, 4)
+    prob_over15 = round(1.0 - (p0 + p1), 4)
+
+    c_1x = round(1.0 / max(p_asia_l + p_asia_e, 0.08), 2)
+    c_x2 = round(1.0 / max(p_asia_e + p_asia_v, 0.08), 2)
+    c_btts_si = round((c_mundo or {}).get("BTTS_Yes", 1.0 / max(prob_btts_si * 0.96, 0.10)), 2)
+    c_btts_no = round((c_mundo or {}).get("BTTS_No", 1.0 / max(prob_btts_no * 0.96, 0.10)), 2)
+    c_over25 = round((c_mundo or {}).get("Over_2.5", 1.0 / max(prob_over25 * 0.96, 0.10)), 2)
+    c_under25 = round((c_mundo or {}).get("Under_2.5", 1.0 / max(prob_under25 * 0.96, 0.10)), 2)
+    c_over15 = round((c_mundo or {}).get("Over_1.5", 1.0 / max(prob_over15 * 0.96, 0.10)), 2)
+
+    opciones = [
+        ("GANA LOCAL (1)", prob_l, c_asia["Home"]),
+        ("EMPATE (X)", prob_e, c_asia["Draw"]),
+        ("GANA VISITANTE (2)", prob_v, c_asia["Away"]),
+        ("LOCAL O EMPATE (1X)", round(prob_l + prob_e, 4), c_1x),
+        ("EMPATE O VISITANTE (X2)", round(prob_e + prob_v, 4), c_x2),
+        ("AMBOS MARCAN: SÍ", prob_btts_si, c_btts_si),
+        ("AMBOS MARCAN: NO", prob_btts_no, c_btts_no),
+        ("MÁS DE 2.5 GOLES", prob_over25, c_over25),
+        ("MENOS DE 2.5 GOLES", prob_under25, c_under25),
+        ("MÁS DE 1.5 GOLES", prob_over15, c_over15),
+    ]
+
     mejor = None
-    for nombre, pr, ct in [("LOCAL", prob_l, c_asia["Home"]), ("EMPATE CON GOLES", prob_e, c_asia["Draw"]), ("VISITANTE", prob_v, c_asia["Away"])]:
+    mejor_ev = -1.0
+    for nombre, pr, ct in opciones:
         ev = (pr * ct) - 1.0
-        if ev >= 0.04 and pr >= 0.42 and (not mejor or ev > mejor[3]):
-            mejor = (nombre, pr, ct, ev)
+        if ev >= 0.02 and pr >= 0.30 and 1.25 <= ct <= 4.20:
+            if ev > mejor_ev:
+                mejor = (nombre, pr, ct, ev)
+                mejor_ev = ev
+
     if not mejor:
         return None
 
@@ -346,6 +384,7 @@ def analizar_partido(p, elos, tablas, cal):
         "entropia": entropia,
         "resumen_ia": resumen_ia
     }
+
 
 
 def enviar_telegram(mensaje_html):
