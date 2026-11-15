@@ -269,7 +269,7 @@ def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
             votos_ok += 1
             notas.append(f"{etiqueta}: Sin novedad ({str(e)[:30]})")
     return (votos_ok >= 2), " | ".join(notas)
- def analizar_partido(p, elos, tablas, cal):
+  def analizar_partido(p, elos, tablas, cal):
     fix = p.get("fixture", {})
     fid = str(fix.get("id", ""))
     fecha_iso = fix.get("date", "")
@@ -310,15 +310,15 @@ def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
 
     steam_alerta = "Normal"
     if c_mundo and c_asia["Home"] < c_mundo["Home"] * 0.92:
-        steam_alerta = "Caída fuerte cuota Local en Asia"
+        steam_alerta = "Caída fuerte cuota local en Asia"
     elif c_mundo and c_asia["Away"] < c_mundo["Away"] * 0.92:
         steam_alerta = "Caída fuerte cuota Visitante en Asia"
 
     mejor = None
-    for nombre_m, pr, ct in [("LOCAL", prob_l, c_asia["Home"]), ("EMPATE CON GOLES", prob_e, c_asia["Draw"]), ("VISITANTE", prob_v, c_asia["Away"])]:
+    for nombre, pr, ct in [("LOCAL", prob_l, c_asia["Home"]), ("EMPATE CON GOLES", prob_e, c_asia["Draw"]), ("VISITANTE", prob_v, c_asia["Away"])]:
         ev = (pr * ct) - 1.0
-        if ev >= 0.04 and pr >= 0.42 and (not mejor or ev > mejor):
-            mejor = (nombre_m, pr, ct, ev)
+        if ev >= 0.04 and pr >= 0.42 and (not mejor or ev > mejor[3]):
+            mejor = (nombre, pr, ct, ev)
     if not mejor:
         return None
 
@@ -332,22 +332,31 @@ def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
         return None
 
     return {
-        "fixture_id": fid, "fecha": fecha_iso, "liga": liga_nom,
-        "local": loc, "visitante": vis, "prediccion": pred_txt,
-        "probabilidad": round(prob_final * 100, 1), "cuota": cuota_final,
-        "ev": round(ev_final * 100, 1), "stake": stake,
-        "entropia": entropia, "resumen_ia": resumen_ia
+        "fixture_id": fid,
+        "fecha": fecha_iso,
+        "liga": liga_nom,
+        "local": loc,
+        "visitante": vis,
+        "prediccion": pred_txt,
+        "probabilidad": round(prob_final * 100, 1),
+        "cuota": cuota_final,
+        "ev": round(ev_final * 100, 1),
+        "stake": stake,
+        "entropia": entropia,
+        "resumen_ia": resumen_ia
     }
 
 
 def enviar_telegram(mensaje_html):
-    url = "https://api." + f"telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    url = f"https://telegram.org{TELEGRAM_TOKEN}/sendMessage"
     max_len = 3800
     partes, texto_restante = [], mensaje_html
     while len(texto_restante) > max_len:
         corte = texto_restante.rfind("\n\n", 0, max_len)
-        if corte == -1: corte = texto_restante.rfind("\n", 0, max_len)
-        if corte == -1: corte = max_len
+        if corte == -1:
+            corte = texto_restante.rfind("\n", 0, max_len)
+        if corte == -1:
+            corte = max_len
         partes.append(texto_restante[:corte].strip())
         texto_restante = texto_restante[corte:].strip()
     if texto_restante:
@@ -356,7 +365,7 @@ def enviar_telegram(mensaje_html):
         try:
             resp = requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": parte, "parse_mode": "HTML", "disable_web_page_preview": True}, timeout=15)
             if resp.status_code != 200:
-                print(f"Error respuesta Telegram parte {idx} ({resp.status_code}): {resp.text}")
+                print(f"Error respuesta Telegram parte {idx}: ({resp.status_code}): {resp.text}")
             else:
                 print(f"Parte {idx}/{len(partes)} enviada a Telegram correctamente.")
         except Exception as e:
@@ -395,10 +404,12 @@ def main():
 
     guardar_json("www/data/partidos_del_dia.json", {
         "actualizado": ahora.strftime("%Y-%m-%d %H:%M COL"),
-        "calibracion": cal, "total": len(seleccionados), "partidos": seleccionados
+        "calibracion": cal,
+        "total": len(seleccionados),
+        "partidos": seleccionados
     })
 
-    lineas = [f"<b>⚡ ARSENAL MASTER QUANT V18.1</b> ({fecha_hoy})\n"]
+    lineas = [f"<b>⚽ ARSENAL QUANT V18.1</b> ({fecha_hoy})\n"]
     if resumen_auditoria:
         lineas.append(html.escape(resumen_auditoria))
     if not seleccionados:
@@ -407,7 +418,7 @@ def main():
         for t in seleccionados.values():
             lineas.append(
                 f"🏆 <b>{html.escape(t['liga'])}</b>\n"
-                f"⚽ {html.escape(t['local'])} vs {html.escape(t['visitante'])}\n"
+                f"⚔️ {html.escape(t['local'])} vs {html.escape(t['visitante'])}\n"
                 f"🎯 Pick: <b>{html.escape(t['prediccion'])}</b> @ {t['cuota']}\n"
                 f"📊 Prob: {t['probabilidad']}% | EV: +{t['ev']}% | Stake: {t['stake']}%\n"
                 f"🤖 {html.escape(t['resumen_ia'])}\n"
