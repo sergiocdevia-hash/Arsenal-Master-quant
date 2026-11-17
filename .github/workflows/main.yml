@@ -13,6 +13,7 @@ permissions:
 jobs:
   procesar_datos:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Descargar codigo de GitHub
@@ -34,7 +35,7 @@ jobs:
         run: |
           python motor_api_real.py
 
-      - name: 2. Ejecutar Cerebro V18.1 y Enviar a Telegram
+      - name: 2. Ejecutar Cerebro v18.1 y Enviar a Telegram
         env:
           API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -50,6 +51,6 @@ jobs:
           git add predicciones/ www/
           if ! git diff --staged --quiet; then
             git commit -m "Cartelera V18.1 Completa [Automation]"
-            git pull --rebase origin main || true
+            git pull --rebase --autostash origin main || true
             git push
           fi
