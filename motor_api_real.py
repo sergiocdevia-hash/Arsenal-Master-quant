@@ -1,6 +1,7 @@
 import os
 import sys
 import json
+import time
 import requests
 from datetime import datetime, timedelta, timezone
 
@@ -12,13 +13,21 @@ if not API_KEY:
 HEADERS = {"x-apisports-key": API_KEY}
 DOMINIO = "v3.football.api-sports.io"
 
-LIGAS_VIP = {
-    5, 536, 6, 34, 10,
-    2, 3, 39, 40, 140, 141,
-    135, 78, 79, 61, 144,
-    262, 71, 72, 239, 241
-}
+PAUSA_SEGUNDOS = 7.0
+MAX_CONSULTAS_TURNO = 22
+MAX_PARTIDOS_VIP = 10
 
+PRIORIDAD_LIGAS = {
+    # Nivel 1: Selecciones, Mundial, Euro, Copa America, Champions y Libertadores
+    1: 1, 4: 1, 5: 1, 9: 1, 32: 1, 34: 1, 2: 1, 13: 1,
+    # Nivel 2: Europa League, Conference, Sudamericana y Top 5 Europa
+    3: 2, 848: 2, 11: 2, 39: 2, 140: 2, 135: 2, 78: 2, 61: 2,
+    # Nivel 3: America Principal y Ligas Europeas Fuertes
+    239: 3, 71: 3, 128: 3, 262: 3, 88: 3, 94: 3, 203: 3, 144: 3, 6: 3, 10: 3, 536: 3,
+    # Nivel 4: Copas Nacionales, Segundas Top y Resto de America
+    40: 4, 45: 4, 48: 4, 141: 4, 143: 4, 137: 4, 79: 4, 81: 4,
+    179: 4, 207: 4, 218: 4, 241: 4, 72: 4, 265: 4, 281: 4, 268: 4, 242: 4, 253: 4
+}
 
 def cargar_previo(ruta):
     if os.path.exists(ruta):
@@ -31,7 +40,21 @@ def cargar_previo(ruta):
             pass
     return {}
 
+def hacer_peticion(url, estado_cuota, timeout=15):
+    if estado_cuota["usadas"] >= MAX_CONSULTAS_TURNO:
+        return None
+    if estado_cuota["restantes_api"] is not None and estado_cuota["restantes_api"] <= 12:
+        return None
 
+    resp = requests.get(url, headers=HEADERS, timeout=timeout)
+    estado_cuota["usadas"] += 1
+
+    rem = resp.headers.get("x-ratelimit-requests-remaining")
+    if rem is not None and str(rem).isdigit():
+        estado_cuota["restantes_api"] = int(rem)
+
+    time.sleep(PAUSA_SEGUNDOS)
+    return resp
 def main():
     tz_col = timezone(timedelta(hours=-5))
     ahora_col = datetime.now(tz_col)
@@ -58,14 +81,17 @@ def main():
     alineaciones_cache = previo.get("alineaciones_vip", {}) if isinstance(previo.get("alineaciones_vip"), dict) else {}
     resultados_ayer = previo.get("resultados_ayer", {}) if isinstance(previo.get("resultados_ayer"), dict) else {}
 
-    consultas = 0
+    estado_cuota = {"usadas": 0, "restantes_api": None}
 
     try:
         url_hoy = f"https://{DOMINIO}/fixtures?date={fecha_hoy}"
-        resp = requests.get(url_hoy, headers=HEADERS, timeout=25)
-        consultas += 1
-        if resp.status_code != 200:
-            print(f"Error HTTP {resp.status_code}: {resp.text}")
+        resp = hacer_peticion(url_hoy, estado_cuota, timeout=25)
+        if resp is None or resp.status_code != 200:
+            code = resp.status_code if resp is not None else "LIMITE"
+            print(f"Error HTTP {code}")
+            if previo.get("partidos"):
+                print("Usando respaldo guardado de hoy.")
+                sys.exit(0)
             sys.exit(1)
 
         datos = resp.json()
@@ -80,14 +106,20 @@ def main():
         todos_partidos = datos.get("response", [])
         partidos_vip = [
             p for p in todos_partidos
-            if p.get("league", {}).get("id") in LIGAS_VIP
+            if p.get("league", {}).get("id") in PRIORIDAD_LIGAS
         ]
+
+        partidos_vip.sort(
+            key=lambda p: (
+                PRIORIDAD_LIGAS.get(p.get("league", {}).get("id"), 99),
+                p.get("fixture", {}).get("timestamp", 0)
+            )
+        )
 
         if turno == "APERTURA" and not resultados_ayer:
             try:
-                r_ayer = requests.get(f"https://{DOMINIO}/fixtures?date={fecha_ayer}", headers=HEADERS, timeout=15)
-                consultas += 1
-                if r_ayer.status_code == 200:
+                r_ayer = hacer_peticion(f"https://{DOMINIO}/fixtures?date={fecha_ayer}", estado_cuota, timeout=15)
+                if r_ayer is not None and r_ayer.status_code == 200:
                     for item in r_ayer.json().get("response", []):
                         fid_ayer = str(item.get("fixture", {}).get("id", ""))
                         st_ayer = item.get("fixture", {}).get("status", {}).get("short", "")
@@ -98,14 +130,16 @@ def main():
                                 "gv": goals.get("away", 0)
                             }
             except Exception as e_aud:
-                print(f"Aviso auditoría ayer: {e_aud}")
+                print(f"Aviso auditoria ayer: {e_aud}")
 
-        # Descarga masiva de cuotas del día en una sola petición (ahorra hasta 11 peticiones)
-        if len(cuotas_cache) < len(partidos_vip):
+        faltan_cuotas = any(
+            str(p.get("fixture", {}).get("id", "")) not in cuotas_cache
+            for p in partidos_vip[:MAX_PARTIDOS_VIP]
+        )
+        if partidos_vip and faltan_cuotas:
             try:
-                r_odds = requests.get(f"https://{DOMINIO}/odds?date={fecha_hoy}&bookmaker=4", headers=HEADERS, timeout=15)
-                consultas += 1
-                if r_odds.status_code == 200:
+                r_odds = hacer_peticion(f"https://{DOMINIO}/odds?date={fecha_hoy}&bookmaker=4", estado_cuota, timeout=20)
+                if r_odds is not None and r_odds.status_code == 200:
                     for odd_item in r_odds.json().get("response", []):
                         ofid = str(odd_item.get("fixture", {}).get("id", ""))
                         if ofid and odd_item.get("bookmakers"):
@@ -125,43 +159,41 @@ def main():
             if not fid or estado in ("FT", "AET", "PEN"):
                 continue
 
-            if contador_vip < 12:
-                contador_vip += 1
+            if contador_vip >= MAX_PARTIDOS_VIP:
+                break
+            contador_vip += 1
 
-                if fid not in cuotas_cache:
-                    try:
-                        r_odd = requests.get(f"https://{DOMINIO}/odds?fixture={fid}", headers=HEADERS, timeout=10)
-                        consultas += 1
-                        if r_odd.status_code == 200:
-                            odd_list = r_odd.json().get("response", [])
-                            primer_odd = next(iter(odd_list), None)
-                            if isinstance(primer_odd, dict):
-                                cuotas_cache[fid] = primer_odd.get("bookmakers", [])
-                    except Exception:
-                        pass
+            if fid not in cuotas_cache:
+                try:
+                    r_odd = hacer_peticion(f"https://{DOMINIO}/odds?fixture={fid}", estado_cuota, timeout=10)
+                    if r_odd is not None and r_odd.status_code == 200:
+                        odd_list = r_odd.json().get("response", [])
+                        primer_odd = next(iter(odd_list), None)
+                        if isinstance(primer_odd, dict):
+                            cuotas_cache[fid] = primer_odd.get("bookmakers", [])
+                except Exception:
+                    pass
 
-                if turno == "EUROPA" and fid not in alineaciones_cache:
-                    try:
-                        r_lin = requests.get(f"https://{DOMINIO}/fixtures/lineups?fixture={fid}", headers=HEADERS, timeout=10)
-                        consultas += 1
-                        if r_lin.status_code == 200:
-                            lin_list = r_lin.json().get("response", [])
-                            if isinstance(lin_list, list) and len(lin_list) >= 2:
-                                alineaciones_cache[fid] = True
-                    except Exception:
-                        pass
-                elif id_loc and id_vis and fid not in h2h_cache:
-                    try:
-                        r_h2h = requests.get(
-                            f"https://{DOMINIO}/fixtures/headtohead?h2h={id_loc}-{id_vis}&last=5",
-                            headers=HEADERS,
-                            timeout=10
-                        )
-                        consultas += 1
-                        if r_h2h.status_code == 200:
-                            h2h_cache[fid] = r_h2h.json().get("response", [])
-                    except Exception:
-                        pass
+            if turno == "EUROPA" and fid not in alineaciones_cache:
+                try:
+                    r_lin = hacer_peticion(f"https://{DOMINIO}/fixtures/lineups?fixture={fid}", estado_cuota, timeout=10)
+                    if r_lin is not None and r_lin.status_code == 200:
+                        lin_list = r_lin.json().get("response", [])
+                        if isinstance(lin_list, list) and len(lin_list) >= 2:
+                            alineaciones_cache[fid] = True
+                except Exception:
+                    pass
+            elif id_loc and id_vis and fid not in h2h_cache:
+                try:
+                    r_h2h = hacer_peticion(
+                        f"https://{DOMINIO}/fixtures/headtohead?h2h={id_loc}-{id_vis}&last=5",
+                        estado_cuota,
+                        timeout=10
+                    )
+                    if r_h2h is not None and r_h2h.status_code == 200:
+                        h2h_cache[fid] = r_h2h.json().get("response", [])
+                except Exception:
+                    pass
 
             p["bookmakers"] = cuotas_cache.get(fid, [])
             p["h2h"] = h2h_cache.get(fid, [])
@@ -178,12 +210,13 @@ def main():
         with open(nombre_archivo, "w", encoding="utf-8") as archivo:
             json.dump(datos, archivo, indent=4, ensure_ascii=False)
 
-        print(f"OK Turno {turno}: {len(partidos_enriquecidos)} partidos VIP | Consultas nuevas: {consultas}")
+        rest_txt = estado_cuota["restantes_api"] if estado_cuota["restantes_api"] is not None else "N/A"
+        print(f"OK Turno {turno}: {len(partidos_enriquecidos)} partidos VIP | Consultas turno: {estado_cuota['usadas']} | Restantes API hoy: {rest_txt}")
 
     except Exception as e:
-        print(f"Error crítico en motor_api_real.py: {e}")
+        print(f"Error critico en motor_api_real.py: {e}")
         sys.exit(1)
-
 
 if __name__ == "__main__":
     main()
+    
