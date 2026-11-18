@@ -172,7 +172,7 @@ def calcular_cuantico(info: dict) -> dict:
         "kelly_stake": f"{kelly}% Bank", "entropia": round(entropia, 3),
         "casa_colombia": casas[int(info["id"]) % 4]
     }
-    def evaluar_multiagente(client, guard: RateLimiterGuard, info: dict, q: dict) -> dict:
+def evaluar_multiagente(client, guard: RateLimiterGuard, info: dict, q: dict) -> dict:
     respaldo = f"Dixon-Coles (15k sim) confirma {q['prediccion']} con EV +{q['ev']}% y valor en {q['casa_colombia']}."
     if not client:
         return {"resumen_ia": respaldo}
