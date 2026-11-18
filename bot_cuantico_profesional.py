@@ -123,7 +123,7 @@ def extraer_partido(raw: dict, factor_ayer: float = 1.0) -> dict:
         "xg_local": max(0.45, min(3.10, xg_l)), "xg_visita": max(0.40, min(2.90, xg_v)),
         "cuotas": cuotas
                     } 
-    }
+    
     def calcular_cuantico(info: dict) -> dict:
     lmbda, mu, cuotas = info["xg_local"], info["xg_visita"], info["cuotas"]
     p_l = [(math.exp(-lmbda) * (lmbda ** g)) / math.factorial(g) for g in range(8)]
