@@ -60,12 +60,13 @@ class RateLimiterGuard:
             self.total += 1
             return True
 def extraer_partido(raw: dict, factor_ayer: float = 1.0) -> dict:
-    fix = raw.get("fixture", {})
-    lig = raw.get("league", {})
-    tms = raw.get("teams", {})
-    home, away = tms.get("home", {}), tms.get("away", {})
-    fid = fix.get("id", random.randint(10000, 99999))
-    fecha_iso = str(fix.get("date", ""))
+    fix = raw.get("fixture") or {}
+    lig = raw.get("league") or {}
+    tms = raw.get("teams") or {}
+    home = tms.get("home") or {}
+    away = tms.get("away") or {}
+    fid = fix.get("id") or raw.get("id") or random.randint(10000, 99999)
+    fecha_iso = str(fix.get("date") or raw.get("fecha") or "")
     hora_col = "Por definir"
     if "T" in fecha_iso:
         try:
@@ -74,38 +75,49 @@ def extraer_partido(raw: dict, factor_ayer: float = 1.0) -> dict:
             fecha_iso = dt_col.isoformat()
         except Exception:
             hora_col = fecha_iso.partition("T").__getitem__(2)[:5]
-        
 
     cuotas = {}
-    for bk in raw.get("bookmakers", []):
-        for bet in bk.get("bets", []):
-            bname = bet.get("name", "")
-            for val in bet.get("values", []):
-                v, odd = str(val.get("value", "")), float(val.get("odd", 0) or 0)
-                if odd <= 1.01:
-                    continue
-                if bname == "Match Winner":
-                    if v == "Home": cuotas.setdefault("1", odd)
-                    elif v == "Draw": cuotas.setdefault("X", odd)
-                    elif v == "Away": cuotas.setdefault("2", odd)
-                elif bname == "Double Chance":
-                    if v == "Home/Draw": cuotas.setdefault("1X", odd)
-                    elif v == "Draw/Away": cuotas.setdefault("X2", odd)
-                elif bname == "Goals Over/Under" and v == "Over 2.5":
-                    cuotas.setdefault("Over2.5", odd)
-                elif bname == "Both Teams Score" and v == "Yes":
-                    cuotas.setdefault("BTTS", odd)
+    fuente_cuotas = raw.get("cuotas_vip") or raw.get("bookmakers") or []
+    if isinstance(fuente_cuotas, dict):
+        cuotas.update(fuente_cuotas)
+    elif isinstance(fuente_cuotas, list):
+        for bk in fuente_cuotas:
+            if not isinstance(bk, dict):
+                continue
+            for bet in bk.get("bets") or []:
+                bname = bet.get("name", "")
+                for val in bet.get("values") or []:
+                    v = str(val.get("value", ""))
+                    try:
+                        odd = float(val.get("odd", 0) or 0)
+                    except (ValueError, TypeError):
+                        odd = 0.0
+                    if odd <= 1.01:
+                        continue
+                    if bname == "Match Winner":
+                        if v == "Home": cuotas.setdefault("1", odd)
+                        elif v == "Draw": cuotas.setdefault("X", odd)
+                        elif v == "Away": cuotas.setdefault("2", odd)
+                    elif bname == "Double Chance":
+                        if v == "Home/Draw": cuotas.setdefault("1X", odd)
+                        elif v == "Draw/Away": cuotas.setdefault("X2", odd)
+                    elif bname == "Goals Over/Under" and v == "Over 2.5":
+                        cuotas.setdefault("Over2.5", odd)
+                    elif bname == "Both Teams Score" and v == "Yes":
+                        cuotas.setdefault("BTTS", odd)
 
-    xg_mkt_l = max(0.65, min(2.60, 2.75 / max(1.15, cuotas.get("1", 2.10))))
-    xg_mkt_v = max(0.55, min(2.40, 2.55 / max(1.15, cuotas.get("2", 3.20))))
+    xg_mkt_l = max(0.65, min(2.60, 2.75 / max(1.15, float(cuotas.get("1", 2.10)))))
+    xg_mkt_v = max(0.55, min(2.40, 2.55 / max(1.15, float(cuotas.get("2", 3.20)))))
 
-    h2h_list = raw.get("h2h", [])
+    h2h_list = raw.get("h2h_vip") or raw.get("h2h") or []
     gh_sum = ga_sum = muestras = 0.0
     id_home = home.get("id")
     for m in h2h_list:
-        g = m.get("goals", {})
+        if not isinstance(m, dict):
+            continue
+        g = m.get("goals") or {}
         if g.get("home") is not None and g.get("away") is not None:
-            es_local = (m.get("teams", {}).get("home", {}).get("id") == id_home)
+            es_local = ((m.get("teams") or {}).get("home") or {}).get("id") == id_home
             gh_sum += float(g["home"] if es_local else g["away"])
             ga_sum += float(g["away"] if es_local else g["home"])
             muestras += 1.0
@@ -116,13 +128,15 @@ def extraer_partido(raw: dict, factor_ayer: float = 1.0) -> dict:
     else:
         xg_l, xg_v = xg_mkt_l * factor_ayer, xg_mkt_v * factor_ayer
 
-    pais = lig.get("country", "World")
+    pais = lig.get("country") or "World"
     return {
-        "id": fid, "liga": lig.get("name", "LIGA VIP"), "pais": pais,
+        "id": fid, "liga": lig.get("name") or raw.get("liga") or "LIGA VIP", "pais": pais,
         "bandera": BANDERAS.get(pais, "⚽"), "fecha": fecha_iso, "hora": hora_col,
-        "local": home.get("name", "Local"), "visitante": away.get("name", "Visitante"),
+        "local": home.get("name") or raw.get("local") or "Local",
+        "visitante": away.get("name") or raw.get("visitante") or "Visitante",
         "xg_local": max(0.45, min(3.10, xg_l)), "xg_visita": max(0.40, min(2.90, xg_v)),
         "cuotas": cuotas
+                        }
                     } 
     
 def calcular_cuantico(info: dict) -> dict:
