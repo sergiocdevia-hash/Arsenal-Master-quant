@@ -73,7 +73,8 @@ def extraer_partido(raw: dict, factor_ayer: float = 1.0) -> dict:
             hora_col = dt_col.strftime("%H:%M")
             fecha_iso = dt_col.isoformat()
         except Exception:
-            hora_col = fecha_iso.partition("T")[:5]
+            hora_col = fecha_iso.partition("T").__getitem__(2)[:5]
+        
 
     cuotas = {}
     for bk in raw.get("bookmakers", []):
@@ -169,8 +170,8 @@ def calcular_cuantico(info: dict) -> dict:
         "prediccion": elegido["m"], "mercado": elegido["m"], "cuota": round(elegido["c"], 2),
         "probabilidad": round(elegido["p"] * 100, 1), "ev": round(ev * 100, 1),
         "confianza": round(min(96.5, max(64.0, elegido["p"] * 82 + (1 - entropia) * 18)), 1),
-        "kelly_stake": f"{kelly}% Bank", "entropia": round(entropia, 3),
-        "casa_colombia": casas[int(info["id"]) % 4]
+            "casa_colombia": casas.__getitem__(int(info["id"]) % 4)
+        
     }
 def evaluar_multiagente(client, guard: RateLimiterGuard, info: dict, q: dict) -> dict:
     respaldo = f"Dixon-Coles (15k sim) confirma {q['prediccion']} con EV +{q['ev']}% y valor en {q['casa_colombia']}."
@@ -256,7 +257,7 @@ def difundir_telegram(cartelera: list, token: str, vip_id: str, free_id: str, li
             else:
                 enviar_tg(token, "sendMessage", {"chat_id": vip_id, "text": txt, "parse_mode": "HTML", "protect_content": True, "reply_markup": json.loads(btn_web)})
 
-    if free_id:
+        if free_id:
         top2 = sorted(cartelera, key=lambda x: x["confianza"], reverse=True)[:2]
         comb = 1.0
         for t in top2:
