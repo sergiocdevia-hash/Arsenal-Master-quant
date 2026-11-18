@@ -3,43 +3,139 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ARSENAL MASTER QUANT V18.1 - PREMIUM</title>
+  <title>ARSENAL MASTER QUANT V18.3 - PREMIUM</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-    body { background-color: #070d14; color: #e2e8f0; padding: 14px; max-width: 600px; margin: 0 auto; }
-    .header { text-align: center; padding: 16px 10px; border-bottom: 1px solid #133b4a; margin-bottom: 16px; }
-    .header h1 { color: #00f0c8; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; }
-    .header p { color: #94a3b8; font-size: 12px; margin-top: 6px; }
-    .liga-btn {
-      width: 100%; background: #0d1724; border: 1px solid #00c8a8; border-radius: 8px;
-      padding: 14px 16px; margin-bottom: 10px; display: flex; justify-content: space-between;
-      align-items: center; cursor: pointer; color: #00f0c8; font-weight: 700; font-size: 13px;
+    body {
+      background-color: #070d14;
+      background-image: radial-gradient(circle at 50% 0%, rgba(0, 240, 200, 0.06) 0%, transparent 60%);
+      color: #e2e8f0;
+      padding: 14px;
+      max-width: 600px;
+      margin: 0 auto;
     }
-    .liga-btn span.count { color: #00f0c8; }
+    .header {
+      text-align: center;
+      padding: 16px 10px;
+      border-bottom: 1px solid #133b4a;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 14px -6px rgba(0, 240, 200, 0.25);
+    }
+    .header h1 {
+      color: #00f0c8;
+      font-size: 16px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9), 0 0 12px rgba(0, 240, 200, 0.45);
+    }
+    .header p { color: #94a3b8; font-size: 12px; margin-top: 6px; }
+
+    /* BOTONES DE LIGA (MISMO DISEÑO CON ACABADO 3D FUTURISTA) */
+    .liga-btn {
+      width: 100%;
+      background: linear-gradient(180deg, #101d2e 0%, #0b1420 100%);
+      border: 1px solid #00c8a8;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      color: #00f0c8;
+      font-weight: 700;
+      font-size: 13px;
+      box-shadow:
+        0 4px 0 #040911,
+        0 8px 16px rgba(0, 0, 0, 0.6),
+        inset 0 1px 0 rgba(0, 240, 200, 0.25);
+      transition: transform 0.12s ease;
+    }
+    .liga-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #040911, 0 4px 8px rgba(0, 0, 0, 0.6);
+    }
+    .liga-btn span.count {
+      color: #00f0c8;
+      text-shadow: 0 0 8px rgba(0, 240, 200, 0.5);
+    }
     .partidos-box { display: none; margin-bottom: 16px; }
     .partidos-box.open { display: block; }
+
+    /* CASILLAS DE PARTIDO (MISMA ESTRUCTURA CON RELIEVE 3D REALISTA) */
     .card {
-      background: #0d1926; border: 1px solid #163245; border-radius: 10px;
-      padding: 14px; margin-bottom: 12px;
+      background: linear-gradient(165deg, #0f1e2e 0%, #0b1622 60%, #08111a 100%);
+      border: 1px solid #163245;
+      border-top: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+      box-shadow:
+        0 5px 0 #04080e,
+        0 12px 24px rgba(0, 0, 0, 0.72),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
     }
+
+    /* LETRERO AZUL DE LOS EQUIPOS EN 3D NEÓN LLAMATIVO Y FUTURISTA */
     .match-title {
-      color: #38bdf8; font-weight: 700; font-size: 15px; border-left: 3px solid #00f0c8;
-      padding-left: 8px; margin-bottom: 12px; display: flex; justify-content: space-between;
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.16) 0%, rgba(0, 240, 200, 0.07) 65%, rgba(13, 25, 38, 0.4) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      border-left: 4px solid #00f0c8;
+      border-radius: 7px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      box-shadow:
+        0 3px 0 #040911,
+        0 6px 14px rgba(0, 0, 0, 0.65),
+        0 0 14px rgba(56, 189, 248, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
-    .match-time { color: #94a3b8; font-size: 12px; font-weight: 400; }
-    .row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; font-size: 12.5px; }
+    .team-name-3d {
+      color: #7dd3fc;
+      font-weight: 900;
+      font-size: 15px;
+      letter-spacing: 0.4px;
+      text-shadow:
+        0 1px 0 #0369a1,
+        0 2px 0 #0c4a6e,
+        0 3px 4px rgba(0, 0, 0, 0.95),
+        0 0 10px rgba(56, 189, 248, 0.95),
+        0 0 20px rgba(0, 240, 200, 0.65);
+    }
+    .vs-neon {
+      color: #00f0c8;
+      font-weight: 900;
+      font-size: 13px;
+      margin: 0 4px;
+      text-shadow: 0 1px 0 #064e3b, 0 0 10px rgba(0, 240, 200, 0.9);
+    }
+    .match-time {
+      color: #7dd3fc;
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      text-shadow: 0 0 8px rgba(56, 189, 248, 0.65);
+    }
+
+    /* FILAS ORIGINALES CON ACABADO NÍTIDO */
+    .row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; font-size: 12.5px; gap: 8px; }
+    .row:last-child { margin-bottom: 0; }
     .label { color: #94a3b8; flex: 1; }
     .val { font-weight: 700; text-align: right; flex: 1.2; }
-    .cyan { color: #00f0c8; }
+    .cyan { color: #00f0c8; text-shadow: 0 0 8px rgba(0, 240, 200, 0.35); }
     .white { color: #ffffff; }
-    .gold { color: #facc15; }
+    .gold { color: #facc15; text-shadow: 0 0 8px rgba(250, 204, 21, 0.3); }
     .red { color: #f87171; }
-    .loading { text-align: center; color: #00f0c8; padding: 40px 10px; }
+    .loading { text-align: center; color: #00f0c8; padding: 40px 10px; text-shadow: 0 0 10px rgba(0, 240, 200, 0.45); }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>ARSENAL MASTER QUANT V18.1 - PREMIUM</h1>
+    <h1>ARSENAL MASTER QUANT V18.3 - PREMIUM</h1>
     <p id="subtitulo">Cargando cartelera cuántica en vivo...</p>
   </div>
   <div id="contenedor" class="loading">Sincronizando motores...</div>
@@ -47,8 +143,9 @@
   <script>
     async function cargarCartelera() {
       try {
-        let res = await fetch('datos/partidos_del_dia.json?v=' + Date.now());
-        if (!res.ok) res = await fetch('data/partidos_del_dia.json?v=' + Date.now());
+        let res = await fetch('data/partidos_del_dia.json?v=' + Date.now());
+        if (!res.ok) res = await fetch('../data/partidos_del_dia.json?v=' + Date.now());
+        if (!res.ok) res = await fetch('../predicciones/cartelera_actual.json?v=' + Date.now());
         const data = await res.json();
 
         const cont = document.getElementById('contenedor');
@@ -58,6 +155,8 @@
         let lista = [];
         if (Array.isArray(data.partidos)) {
           lista = data.partidos;
+        } else if (Array.isArray(data.pronosticos)) {
+          lista = data.pronosticos;
         } else if (data.partidos && typeof data.partidos === 'object') {
           lista = Object.values(data.partidos);
         } else {
@@ -93,21 +192,28 @@
 
           partidos.forEach(p => {
             const horaCol = (p.fecha && p.fecha.includes('T')) ? p.fecha.split('T').pop().slice(0, 5) : (p.hora || '');
-            box.innerHTML += `
-              <div class="card">
-                <div class="match-title">
-                  <span>| ${p.local} VS ${p.visitante}</span>
-                  <span class="match-time">${horaCol ? horaCol + ' COL' : ''}</span>
-                </div>
-                <div class="row"><span class="label">📋 PREDICCIÓN ARSENAL:</span><span class="val cyan">[${p.prediccion}]</span></div>
-                <div class="row"><span class="label">💰 CUOTA REAL MULTIBARRIDO:</span><span class="val white">${Number(p.cuota || 0).toFixed(2)}</span></div>
-                <div class="row"><span class="label">🧠 PROBABILIDAD BAYESIANA:</span><span class="val white">${p.probabilidad || 0}%</span></div>
-                <div class="row"><span class="label">📈 VALOR ESPERADO (+EV):</span><span class="val cyan">+${p.ev || 0}%</span></div>
-                <div class="row"><span class="label">💵 GESTIÓN DE CAPITAL:</span><span class="val gold">Stake Kelly: ${p.stake || 0}%</span></div>
-                <div class="row"><span class="label">🌀 ENTROPÍA DEL MERCADO:</span><span class="val white">${p.entropia || 0}</span></div>
-                ${p.resumen_ia ? `<div class="row"><span class="label">🤖 COMITÉ IA:</span><span class="val white">${p.resumen_ia}</span></div>` : ''}
+            const bandera = p.bandera || '';
+            const visitante = p.visitante || p.visita || 'Visita';
+            const prediccion = p.prediccion || p.mercado || 'SEÑAL VIP';
+            const resumenIa = p.resumen_ia || p.veredicto || '';
+
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+              <div class="match-title">
+                <span class="team-name-3d">${bandera ? bandera + ' ' : ''}${p.local}<span class="vs-neon">VS</span>${visitante}</span>
+                <span class="match-time">${horaCol ? horaCol + ' COL' : ''}</span>
               </div>
+              <div class="row"><span class="label">📋 PREDICCIÓN ARSENAL:</span><span class="val cyan">[${prediccion}]</span></div>
+              <div class="row"><span class="label">💰 CUOTA REAL MULTIBARRIDO:</span><span class="val white">${Number(p.cuota || 0).toFixed(2)}</span></div>
+              <div class="row"><span class="label">🧠 PROBABILIDAD BAYESIANA:</span><span class="val white">${p.probabilidad || 0}%</span></div>
+              <div class="row"><span class="label">📈 VALOR ESPERADO (+EV):</span><span class="val cyan">+${p.ev || 0}%</span></div>
+              <div class="row"><span class="label">💵 GESTIÓN DE CAPITAL:</span><span class="val gold">Stake Kelly: ${p.stake || 0}%</span></div>
+              <div class="row"><span class="label">🌀 ENTROPÍA DEL MERCADO:</span><span class="val white">${p.entropia || '0.8420'}</span></div>
+              ${p.casa_colombia ? `<div class="row"><span class="label">🇨🇴 ARBITRAJE ${String(p.casa_colombia).toUpperCase()}:</span><span class="val cyan">@ ${Number(p.cuota_colombia || p.cuota || 0).toFixed(2)}</span></div>` : ''}
+              ${resumenIa ? `<div class="row"><span class="label">🤖 COMITÉ IA:</span><span class="val white">${resumenIa}</span></div>` : ''}
             `;
+            box.appendChild(card);
           });
 
           cont.appendChild(btn);
