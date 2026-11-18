@@ -257,7 +257,7 @@ def difundir_telegram(cartelera: list, token: str, vip_id: str, free_id: str, li
             else:
                 enviar_tg(token, "sendMessage", {"chat_id": vip_id, "text": txt, "parse_mode": "HTML", "protect_content": True, "reply_markup": json.loads(btn_web)})
 
-        if free_id:
+    if free_id:
         top2 = sorted(cartelera, key=lambda x: x["confianza"], reverse=True)[:2]
         comb = 1.0
         for t in top2:
