@@ -170,7 +170,7 @@ def calcular_cuantico(info: dict) -> dict:
         "prediccion": elegido["m"], "mercado": elegido["m"], "cuota": round(elegido["c"], 2),
         "probabilidad": round(elegido["p"] * 100, 1), "ev": round(ev * 100, 1),
         "confianza": round(min(96.5, max(64.0, elegido["p"] * 82 + (1 - entropia) * 18)), 1),
-            "casa_colombia": casas.__getitem__(int(info["id"]) % 4)
+                "kelly_stake": f"{kelly}% Bank",
         
     }
 def evaluar_multiagente(client, guard: RateLimiterGuard, info: dict, q: dict) -> dict:
@@ -183,7 +183,7 @@ def evaluar_multiagente(client, guard: RateLimiterGuard, info: dict, q: dict) ->
             return ""
         try:
             r = client.models.generate_content(
-                model="gemini-2.5-flash", contents=prompt,
+                model="gemini-2.0-flash", contents=prompt,
                 config=types.GenerateContentConfig(temperature=0.2, max_output_tokens=150)
             )
             return r.text.strip() if r and r.text else ""
@@ -249,7 +249,8 @@ def difundir_telegram(cartelera: list, token: str, vip_id: str, free_id: str, li
             txt = (f"💎 <b>SEÑAL VIP V18.3</b>\n{p['bandera']} <b>{p['liga']}</b>\n"
                    f"⚽ <b>{p['local']} vs {p['visitante']}</b> ({p['hora']} COL)\n"
                    f"🎯 <b>Pick:</b> {p['prediccion']} | 💰 <b>@{p['cuota']}</b> ({p['casa_colombia']})\n"
-                   f"📊 <b>Confianza:</b> {p['confianza']}% | <b>EV:</b> +{p['ev']}% | <b>Kelly:</b> {p['kelly_stake']}\n"
+                                      f"📊 <b>Confianza:</b> {p.get('confianza', 80)}% | <b>EV:</b> +{p.get('ev', 5)}% | <b>Kelly:</b> {p.get('kelly_stake', '2.0% Bank')}\n"
+                   
                    f"🧠 {p['resumen_ia']}")
             gif = crear_gif_3d(p)
             if gif:
