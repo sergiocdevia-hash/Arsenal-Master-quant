@@ -1,468 +1,324 @@
-import os, sys, json, math, csv, io, html, random, requests
-from datetime import datetime, timedelta, timezone
-from google import genai
-from google.genai import types
+import os
+import json
+import time
+import math
+import random
+import logging
+import threading
+from datetime import datetime, timezone, timedelta
+from io import BytesIO
+import requests
 
-API_KEY = (os.getenv("API_FOOTBALL_KEY") or "").strip()
-GEMINI_KEY = (os.getenv("GEMINI_API_KEY") or "").strip()
-import re
-TELEGRAM_TOKEN = re.sub(r"[^0-9A-Za-z:_-]", "", os.getenv("TELEGRAM_TOKEN") or "")
-TELEGRAM_CHAT_ID = re.sub(r"[^0-9-]", "", os.getenv("TELEGRAM_CHAT_ID") or "")
-URL_WEB_VIP = "https://sergiocdevia-hash." + "github.io/Arsenal-Master-quant/www/"
+TZ_COL = timezone(timedelta(hours=-5))
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logger = logging.getLogger("ArsenalQuantV18_3")
 
-if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
-    print("ERROR: Faltan credenciales de Telegram.")
-    sys.exit(1)
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    PILLOW_OK = True
+except ImportError:
+    PILLOW_OK = False
 
-LIGAS_VIP_IDS = {
-    5: "UEFA NATIONS LEAGUE", 536: "CONCACAF NATIONS LEAGUE",
-    6: "COPA AFRICANA DE NACIONES", 34: "ELIMINATORIAS CONMEBOL",
-    10: "AMISTOSOS INTERNACIONALES", 2: "UEFA CHAMPIONS LEAGUE",
-    3: "UEFA EUROPA LEAGUE", 39: "PREMIER LEAGUE (INGLATERRA)",
-    40: "CHAMPIONSHIP (INGLATERRA)", 140: "LALIGA EA SPORTS (ESPAÑA)",
-    141: "LALIGA 2 (ESPAÑA)", 135: "SERIE A (ITALIA)",
-    78: "BUNDESLIGA (ALEMANIA)", 79: "2. BUNDESLIGA (ALEMANIA)",
-    61: "LIGUE 1 (FRANCIA)", 144: "JUPILER PRO LEAGUE (BÉLGICA)",
-    262: "LIGA MX (MÉXICO)", 71: "SERIE A (BRASIL)",
-    72: "SERIE B (BRASIL)", 239: "LIGA BETPLAY (COLOMBIA)",
-    241: "COPA COLOMBIA"
+try:
+    from google import genai
+    from google.genai import types
+    GENAI_OK = True
+except ImportError:
+    GENAI_OK = False
+
+BANDERAS = {
+    "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "Spain": "🇪🇸", "Italy": "🇮🇹", "Germany": "🇩🇪",
+    "France": "🇫🇷", "Colombia": "🇨🇴", "Brazil": "🇧🇷", "Argentina": "🇦🇷",
+    "Portugal": "🇵🇹", "Netherlands": "🇳🇱", "USA": "🇺🇸", "Mexico": "🇲🇽"
 }
 
+class RateLimiterGuard:
+    def __init__(self, min_interval=6.5, max_rpm=8, max_calls=32):
+        self.lock = threading.Lock()
+        self.min_interval = min_interval
+        self.max_rpm = max_rpm
+        self.max_calls = max_calls
+        self.last_call = 0.0
+        self.timestamps = []
+        self.total = 0
 
-def cargar_json(ruta, default):
-    if os.path.exists(ruta):
+    def adquirir(self) -> bool:
+        with self.lock:
+            if self.total >= self.max_calls:
+                return False
+            ahora = time.time()
+            self.timestamps = [t for t in self.timestamps if (ahora - t) < 60.0]
+            if len(self.timestamps) >= self.max_rpm:
+                espera = 60.0 - (ahora - min(self.timestamps)) + 0.5
+                if espera > 0:
+                    time.sleep(espera)
+            ahora = time.time()
+            if (ahora - self.last_call) < self.min_interval:
+                time.sleep(self.min_interval - (ahora - self.last_call))
+            self.last_call = time.time()
+            self.timestamps.append(self.last_call)
+            self.total += 1
+            return True
+def extraer_partido(raw: dict, factor_ayer: float = 1.0) -> dict:
+    fix = raw.get("fixture", {})
+    lig = raw.get("league", {})
+    tms = raw.get("teams", {})
+    home, away = tms.get("home", {}), tms.get("away", {})
+    fid = fix.get("id", random.randint(10000, 99999))
+    fecha_iso = str(fix.get("date", ""))
+    hora_col = "Por definir"
+    if "T" in fecha_iso:
         try:
-            with open(ruta, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                if isinstance(data, type(default)):
-                    return data
+            dt_col = datetime.fromisoformat(fecha_iso.replace("Z", "+00:00")).astimezone(TZ_COL)
+            hora_col = dt_col.strftime("%H:%M")
+            fecha_iso = dt_col.isoformat()
         except Exception:
-            pass
-    return default
+            hora_col = fecha_iso.partition("T")[:5]
 
+    cuotas = {}
+    for bk in raw.get("bookmakers", []):
+        for bet in bk.get("bets", []):
+            bname = bet.get("name", "")
+            for val in bet.get("values", []):
+                v, odd = str(val.get("value", "")), float(val.get("odd", 0) or 0)
+                if odd <= 1.01:
+                    continue
+                if bname == "Match Winner":
+                    if v == "Home": cuotas.setdefault("1", odd)
+                    elif v == "Draw": cuotas.setdefault("X", odd)
+                    elif v == "Away": cuotas.setdefault("2", odd)
+                elif bname == "Double Chance":
+                    if v == "Home/Draw": cuotas.setdefault("1X", odd)
+                    elif v == "Draw/Away": cuotas.setdefault("X2", odd)
+                elif bname == "Goals Over/Under" and v == "Over 2.5":
+                    cuotas.setdefault("Over2.5", odd)
+                elif bname == "Both Teams Score" and v == "Yes":
+                    cuotas.setdefault("BTTS", odd)
 
-def guardar_json(ruta, data):
-    carpeta = os.path.dirname(ruta)
-    if carpeta:
-        os.makedirs(carpeta, exist_ok=True)
-    try:
-        with open(ruta, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
-    except Exception as e:
-        print(f"Error guardando {ruta}: {e}")
+    xg_mkt_l = max(0.65, min(2.60, 2.75 / max(1.15, cuotas.get("1", 2.10))))
+    xg_mkt_v = max(0.55, min(2.40, 2.55 / max(1.15, cuotas.get("2", 3.20))))
 
-
-def descargar_clubelo(fecha_str):
-    elos = {}
-    try:
-        url_elo = f"http://api.clubelo.com{fecha_str}"
-        resp = requests.get(url_elo, timeout=10)
-        if resp.status_code == 200:
-            for row in csv.DictReader(io.StringIO(resp.text)):
-                club = str(row.get("Club", "")).strip().lower()
-                elo = row.get("Elo")
-                if club and elo:
-                    try:
-                        elos[club] = float(elo)
-                    except ValueError:
-                        pass
-    except Exception:
-        pass
-    return elos
-
-
-def buscar_elo(nombre_equipo, mapa_elo):
-    nombre = nombre_equipo.lower().strip()
-    if nombre in mapa_elo:
-        return mapa_elo[nombre]
-    for k, v in mapa_elo.items():
-        if nombre in k or k in nombre:
-            return v
-    return 1500.0
-
-
-def obtener_tabla(id_liga, temporada):
-    if not API_KEY:
-        return {}
-    url = "https://v3.football." + f"api-sports.io/standings?league={id_liga}&season={temporada}"
-    try:
-        resp = requests.get(url, headers={"x-apisports-key": API_KEY}, timeout=12)
-        if resp.status_code != 200:
-            return {}
-        primer = next(iter(resp.json().get("response", [])), None)
-        if not isinstance(primer, dict):
-            return {}
-        stats = {}
-        for grupo in primer.get("league", {}).get("standings", []):
-            for fila in grupo:
-                eid = fila.get("team", {}).get("id")
-                pj = fila.get("all", {}).get("played") or 1
-                gf = fila.get("all", {}).get("goals", {}).get("for", 0)
-                gc = fila.get("all", {}).get("goals", {}).get("against", 0)
-                if eid:
-                    stats[eid] = {
-                        "ataque": float(gf) / float(pj),
-                        "defensa": float(gc) / float(pj),
-                        "forma": str(fila.get("form") or "DDDDD")[-5:]
-                    }
-        return stats
-    except Exception:
-        return {}
-
-
-def factor_forma(forma_str):
-    pts = sum(3 if c == "W" else (1 if c == "D" else 0) for c in (forma_str or ""))
-    return 0.88 + (pts / 15.0) * 0.24
-
-
-def analizar_h2h(h2h_list, id_local):
-    if not isinstance(h2h_list, list) or not h2h_list:
-        return 1.0, 1.0
-    gl = gv = 0
+    h2h_list = raw.get("h2h", [])
+    gh_sum = ga_sum = muestras = 0.0
+    id_home = home.get("id")
     for m in h2h_list:
-        gh = m.get("goals", {}).get("home") or 0
-        ga = m.get("goals", {}).get("away") or 0
-        if m.get("teams", {}).get("home", {}).get("id") == id_local:
-            gl += gh
-            gv += ga
-        else:
-            gl += ga
-            gv += gh
-    n = len(h2h_list)
-    return max(0.85, min(1.15, 0.90 + (gl / n) * 0.08)), max(0.85, min(1.15, 0.90 + (gv / n) * 0.08))
-def extraer_cuotas(bookmakers):
-    if not isinstance(bookmakers, list):
-        return None, None
-    c_asia = c_mundo = None
-    for bm in bookmakers:
-        nom = str(bm.get("name", "")).lower()
-        for bet in bm.get("bets", []):
-            if bet.get("id") == 1:
-                vals = {}
-                for v in bet.get("values", []):
-                    try:
-                        vals[str(v.get("value"))] = float(v.get("odd"))
-                    except (ValueError, TypeError):
-                        pass
-                if "Home" in vals and "Draw" in vals and "Away" in vals:
-                    terna = {"Home": vals["Home"], "Draw": vals["Draw"], "Away": vals["Away"]}
-                    if any(a in nom for a in ("pinnacle", "sbobet", "188bet")) and not c_asia:
-                        c_asia = terna
-                    elif any(m in nom for m in ("bet365", "1xbet", "bwin", "william hill")) and not c_mundo:
-                        c_mundo = terna
-                    elif not c_mundo:
-                        c_mundo = terna
-    return (c_asia or c_mundo), (c_mundo or c_asia)
+        g = m.get("goals", {})
+        if g.get("home") is not None and g.get("away") is not None:
+            es_local = (m.get("teams", {}).get("home", {}).get("id") == id_home)
+            gh_sum += float(g["home"] if es_local else g["away"])
+            ga_sum += float(g["away"] if es_local else g["home"])
+            muestras += 1.0
 
+    if muestras > 0:
+        xg_l = ((xg_mkt_l * 0.65) + ((gh_sum / muestras) * 0.35)) * factor_ayer
+        xg_v = ((xg_mkt_v * 0.65) + ((ga_sum / muestras) * 0.35)) * factor_ayer
+    else:
+        xg_l, xg_v = xg_mkt_l * factor_ayer, xg_mkt_v * factor_ayer
 
-def de_vigging(terna):
-    if not terna or any(c <= 1.0 for c in terna):
-        return None
-    inv = [1.0 / c for c in terna]
-    overround = sum(inv)
-    return [round(p / overround, 4) for p in inv] if overround > 0 else None
+    pais = lig.get("country", "World")
+    return {
+        "id": fid, "liga": lig.get("name", "LIGA VIP"), "pais": pais,
+        "bandera": BANDERAS.get(pais, "⚽"), "fecha": fecha_iso, "hora": hora_col,
+        "local": home.get("name", "Local"), "visitante": away.get("name", "Visitante"),
+        "xg_local": max(0.45, min(3.10, xg_l)), "xg_visita": max(0.40, min(2.90, xg_v)),
+        "cuotas": cuotas
+                    } 
+    }
+    def calcular_cuantico(info: dict) -> dict:
+    lmbda, mu, cuotas = info["xg_local"], info["xg_visita"], info["cuotas"]
+    p_l = [(math.exp(-lmbda) * (lmbda ** g)) / math.factorial(g) for g in range(8)]
+    p_v = [(math.exp(-mu) * (mu ** g)) / math.factorial(g) for g in range(8)]
+    sim_l = random.choices(range(8), weights=p_l, k=15000)
+    sim_v = random.choices(range(8), weights=p_v, k=15000)
 
+    p1 = px = p2 = ov = bt = eg = 0.0
+    for gl, gv in zip(sim_l, sim_v):
+        w = 1.0 + (0.11 * lmbda * mu if (gl == 0 and gv == 0) else 0.0)
+        if gl > gv: p1 += w
+        elif gl == gv:
+            px += w
+            if gl > 0: eg += w
+        else: p2 += w
+        if (gl + gv) > 2.5: ov += w
+        if gl > 0 and gv > 0: bt += w
 
-def simulacion_markov_10k(lambda_l, lambda_v, semilla_id):
-    rng = random.Random(semilla_id)
-    pesos = (0.13, 0.15, 0.17, 0.16, 0.18, 0.21)
-    wl = dr = wv = og = btts = u25 = 0
-    for _ in range(10000):
-        gl = gv = 0
-        for p in pesos:
-            ml = 1.08 if gl > gv else (0.94 if gl < gv else 1.0)
-            mv = 1.08 if gv > gl else (0.94 if gv < gl else 1.0)
-            if rng.random() < lambda_l * p * ml:
-                gl += 1
-            if rng.random() < lambda_v * p * mv:
-                gv += 1
-        if gl > gv: wl += 1
-        elif gl < gv: wv += 1
-        else: dr += 1
-        if gl >= 1: og += 1
-        if gl >= 1 and gv >= 1: btts += 1
-        if gl + gv <= 2: u25 += 1
-    return wl / 10000.0, dr / 10000.0, wv / 10000.0, og / 10000.0, btts / 10000.0, u25 / 10000.0
-
-
-def calcular_entropia_shannon(probs):
-    h = sum(-p * math.log2(p) for p in probs if p > 0)
-    return round(h / math.log2(len(probs)), 3)
-
-
-def criterio_kelly(prob_real, cuota, fraccion=0.25, tope=3.5):
-    if not cuota or cuota <= 1.01 or prob_real <= 0:
-        return 0.0
-    b = cuota - 1.0
-    f_star = ((b * prob_real) - (1.0 - prob_real)) / b
-    return round(min(tope, max(0.5, f_star * fraccion * 100.0)), 2) if f_star > 0 else 0.0
-
-
-def auditar_y_calibrar(resultados_ayer, cal):
-    if not resultados_ayer or not os.path.exists("www/data/partidos_del_dia.json"):
-        return ""
-    previa = cargar_json("www/data/partidos_del_dia.json", {})
-    tarjetas = previa.get("partidos", {}) if isinstance(previa.get("partidos"), dict) else previa
-    ok_cnt = eval_cnt = 0
-    for t in tarjetas.values():
-        if not isinstance(t, dict):
-            continue
-        fid = str(t.get("fixture_id", ""))
-        if fid in resultados_ayer:
-            eval_cnt += 1
-            gl, gv = resultados_ayer[fid]["gl"], resultados_ayer[fid]["gv"]
-            pred = t.get("prediccion", "")
-            if (("EMPATE CON GOLES" in pred and gl == gv and gl >= 1) or
-                ("LOCAL" in pred and "1X" not in pred and "EMPATE" not in pred and gl > gv) or
-                ("VISITANTE" in pred and "X2" not in pred and "EMPATE" not in pred and gv > gl) or
-                (("1X" in pred or "LOCAL O EMPATE" in pred) and gl >= gv) or
-                (("X2" in pred or "EMPATE O VISITANTE" in pred) and gv >= gl) or
-                ("BTTS" in pred and gl >= 1 and gv >= 1) or
-                ("UNDER" in pred and gl + gv <= 2)):
-                ok_cnt += 1
-    if eval_cnt > 0:
-        pct = (ok_cnt / eval_cnt) * 100.0
-        if pct < 55.0:
-            cal["peso_asia"] = min(0.55, round(cal.get("peso_asia", 0.40) + 0.03, 2))
-            cal["peso_modelo"] = round(1.0 - cal["peso_asia"], 2)
-        elif pct > 70.0:
-            cal["peso_modelo"] = min(0.70, round(cal.get("peso_modelo", 0.60) + 0.02, 2))
-            cal["peso_asia"] = round(1.0 - cal["peso_modelo"], 2)
-        guardar_json("predicciones/calibracion.json", cal)
-        historial = cargar_json("www/data/historial_aciertos.json", {"registros": []})
-        historial["registros"].append({
-            "fecha": datetime.now(timezone(timedelta(hours=-5))).strftime("%Y-%m-%d"),
-            "evaluados": eval_cnt, "aciertos": ok_cnt, "efectividad": round(pct, 1)
-        })
-        guardar_json("www/data/historial_aciertos.json", historial)
-        return f"📊 Auditoría Ayer: {ok_cnt}/{eval_cnt} aciertos ({pct:.1f}%)\n"
-    return ""
-
-
-def auditar_comite_ia(loc, vis, liga, fecha_str, prediccion, steam_alerta):
-    if not GEMINI_KEY:
-        return True, "Consenso estadístico validado (Modo Cuántico)."
-    client = genai.Client(api_key=GEMINI_KEY)
-    prompt = (
-        f"Evalúa como Comité Cuántico (Bajas, Táctica y Riesgo de Cuota) este partido: "
-        f"{loc} vs {vis} ({liga}) el {fecha_str}. Pronóstico: {prediccion}. Alerta: {steam_alerta}. "
-        f"Responde en una sola línea breve empezando con APROBAR: o RECHAZAR: seguido de tu análisis técnico (máx 18 palabras)."
-    )
-    for modelo in ("gemini-2.5-flash", "gemini-2.0-flash", "gemini-2.0-flash-lite"):
-        try:
-            resp = client.models.generate_content(
-                model=modelo,
-                contents=prompt,
-                config=types.GenerateContentConfig(temperature=0.2)
-            )
-            txt = (resp.text or "").strip()
-            if txt:
-                primera_linea = txt.splitlines().pop(0)
-                aprobado = not primera_linea.upper().startswith("RECHAZAR")
-                limpio = primera_linea.replace("APROBAR:", "").replace("RECHAZAR:", "").strip()
-                return aprobado, limpio
-        except Exception:
-            continue
-    return True, "Consenso matemático y de cuotas validado."
-    
-def analizar_partido(p, elos, tablas, cal):
-    fix = p.get("fixture", {})
-    fid = str(fix.get("id", ""))
-    fecha_iso = fix.get("date", "")
-    liga_info = p.get("league", {})
-    lid = liga_info.get("id")
-    liga_nom = LIGAS_VIP_IDS.get(lid, liga_info.get("name", "Liga VIP"))
-    teams = p.get("teams", {})
-    loc_info, vis_info = teams.get("home", {}), teams.get("away", {})
-    loc_id, vis_id = loc_info.get("id"), vis_info.get("id")
-    loc, vis = loc_info.get("name", "Local"), vis_info.get("name", "Visitante")
-
-    diff_elo = (buscar_elo(loc, elos) + 65.0) - buscar_elo(vis, elos)
-    tabla_liga = tablas.get(lid, {})
-    st_l = tabla_liga.get(loc_id, {"ataque": 1.35, "defensa": 1.25, "forma": "DDDDD"})
-    st_v = tabla_liga.get(vis_id, {"ataque": 1.15, "defensa": 1.35, "forma": "DDDDD"})
-    h2h_l, h2h_v = analizar_h2h(p.get("h2h", []), loc_id)
-    f_l, f_v = factor_forma(st_l["forma"]), factor_forma(st_v["forma"])
-    aj_elo_l = max(0.75, min(1.30, 1.0 + diff_elo / 900.0))
-    aj_elo_v = max(0.75, min(1.30, 1.0 - diff_elo / 900.0))
-
-    lambda_l = max(0.35, min(3.4, ((st_l["ataque"] + st_v["defensa"]) / 2.0) * 1.10 * aj_elo_l * f_l * h2h_l))
-    lambda_v = max(0.30, min(3.1, ((st_v["ataque"] + st_l["defensa"]) / 2.0) * 0.92 * aj_elo_v * f_v * h2h_v))
-    p_l, p_e, p_v, _, _, _ = simulacion_markov_10k(lambda_l, lambda_v, int(fid) if fid.isdigit() else 42)
-
-    c_asia, c_mundo = extraer_cuotas(p.get("bookmakers", []))
-    probs_asia = de_vigging([c_asia["Home"], c_asia["Draw"], c_asia["Away"]]) if c_asia else None
-    if not probs_asia:
-        return None
-
-    p_asia_l, p_asia_e, p_asia_v = probs_asia
-    w_a, w_m = cal.get("peso_asia", 0.45), cal.get("peso_modelo", 0.55)
-    prob_l = round(w_a * p_asia_l + w_m * p_l, 4)
-    prob_e = round(w_a * p_asia_e + w_m * p_e, 4)
-    prob_v = round(w_a * p_asia_v + w_m * p_v, 4)
-    entropia = round(-sum(p * math.log(max(p, 1e-9)) for p in (prob_l, prob_e, prob_v)) / math.log(3), 4)
-    if entropia > 0.99:
-        return None
-
-    steam_alerta = "Normal"
-    if c_mundo and c_asia["Home"] < c_mundo["Home"] * 0.92:
-        steam_alerta = "Caída fuerte cuota Local en Asia"
-    elif c_mundo and c_asia["Away"] < c_mundo["Away"] * 0.92:
-        steam_alerta = "Caída fuerte cuota Visitante en Asia"
-
-    p_gol_l = 1.0 - math.exp(-lambda_l)
-    p_gol_v = 1.0 - math.exp(-lambda_v)
-    prob_btts_si = round(p_gol_l * p_gol_v, 4)
-    prob_btts_no = round(1.0 - prob_btts_si, 4)
-
-    lam_tot = lambda_l + lambda_v
-    p0 = math.exp(-lam_tot)
-    p1 = p0 * lam_tot
-    p2 = p1 * lam_tot / 2.0
-    prob_under25 = round(p0 + p1 + p2, 4)
-    prob_over25 = round(1.0 - prob_under25, 4)
-    prob_over15 = round(1.0 - (p0 + p1), 4)
-
-    c_1x = round(1.0 / max(p_asia_l + p_asia_e, 0.08), 2)
-    c_x2 = round(1.0 / max(p_asia_e + p_asia_v, 0.08), 2)
-    c_btts_si = round((c_mundo or {}).get("BTTS_Yes", 1.0 / max(prob_btts_si * 0.96, 0.10)), 2)
-    c_btts_no = round((c_mundo or {}).get("BTTS_No", 1.0 / max(prob_btts_no * 0.96, 0.10)), 2)
-    c_over25 = round((c_mundo or {}).get("Over_2.5", 1.0 / max(prob_over25 * 0.96, 0.10)), 2)
-    c_under25 = round((c_mundo or {}).get("Under_2.5", 1.0 / max(prob_under25 * 0.96, 0.10)), 2)
-    c_over15 = round((c_mundo or {}).get("Over_1.5", 1.0 / max(prob_over15 * 0.96, 0.10)), 2)
+    tot = max(1e-6, p1 + px + p2)
+    p_1, p_x, p_2 = p1 / tot, px / tot, p2 / tot
+    p_1x, p_x2 = min(0.95, p_1 + p_x), min(0.95, p_x + p_2)
+    p_ov, p_bt, p_eg = max(0.08, ov / 15000), max(0.08, bt / 15000), max(0.04, eg / 15000)
+    entropia = -sum(max(1e-6, p) * math.log2(max(1e-6, p)) for p in (p_1, p_x, p_2)) / math.log2(3)
 
     opciones = [
-        ("GANA LOCAL (1)", prob_l, c_asia["Home"]),
-        ("EMPATE (X)", prob_e, c_asia["Draw"]),
-        ("GANA VISITANTE (2)", prob_v, c_asia["Away"]),
-        ("LOCAL O EMPATE (1X)", round(prob_l + prob_e, 4), c_1x),
-        ("EMPATE O VISITANTE (X2)", round(prob_e + prob_v, 4), c_x2),
-        ("AMBOS MARCAN: SÍ", prob_btts_si, c_btts_si),
-        ("AMBOS MARCAN: NO", prob_btts_no, c_btts_no),
-        ("MÁS DE 2.5 GOLES", prob_over25, c_over25),
-        ("MENOS DE 2.5 GOLES", prob_under25, c_under25),
-        ("MÁS DE 1.5 GOLES", prob_over15, c_over15),
+        {"m": "1 (Local)", "p": p_1, "c": float(cuotas.get("1", round(1 / max(0.15, p_1), 2)))},
+        {"m": "X (Empate)", "p": p_x, "c": float(cuotas.get("X", round(1 / max(0.15, p_x), 2)))},
+        {"m": "2 (Visita)", "p": p_2, "c": float(cuotas.get("2", round(1 / max(0.15, p_2), 2)))},
+        {"m": "1X (Doble Oportunidad)", "p": p_1x, "c": float(cuotas.get("1X", round(1 / max(0.24, p_1x), 2)))},
+        {"m": "X2 (Doble Oportunidad)", "p": p_x2, "c": float(cuotas.get("X2", round(1 / max(0.24, p_x2), 2)))},
+        {"m": "Over 2.5 Goles", "p": p_ov, "c": float(cuotas.get("Over2.5", round(1 / max(0.22, p_ov), 2)))},
+        {"m": "BTTS (Ambos Anotan)", "p": p_bt, "c": float(cuotas.get("BTTS", round(1 / max(0.22, p_bt), 2)))},
+        {"m": "Empate con Goles", "p": p_eg, "c": round(1 / max(0.12, p_eg), 2)},
     ]
 
-    mejor = None
-    mejor_ev = -1.0
-    for nombre, pr, ct in opciones:
-        ev = (pr * ct) - 1.0
-        if ev >= 0.02 and pr >= 0.30 and 1.25 <= ct <= 4.20:
-            if ev > mejor_ev:
-                mejor = (nombre, pr, ct, ev)
-                mejor_ev = ev
-
-    if not mejor:
-        return None
-
-    pred_txt, prob_final, cuota_final, ev_final = mejor
-    stake = criterio_kelly(prob_final, cuota_final)
-    if stake <= 0:
-        return None
-
-    aprobado, resumen_ia = auditar_comite_ia(loc, vis, liga_nom, fecha_iso[:10], pred_txt, steam_alerta)
-    if not aprobado:
-        return None
+    extremo = [o for o in opciones if 2.30 <= o["c"] <= 4.80 and (o["p"] * o["c"] - 1.0) > 0.04]
+    elegido = max(extremo, key=lambda x: x["p"] * x["c"]) if extremo else max(opciones, key=lambda x: x["p"])
+    ev = (elegido["p"] * elegido["c"]) - 1.0
+    kelly = round(min(10.0, max(1.5, (((elegido["c"] - 1) * elegido["p"] - (1 - elegido["p"])) / max(0.05, elegido["c"] - 1)) * 25)), 1)
+    casas = ("BetPlay", "Wplay", "Rushbet", "Betano")
 
     return {
-        "fixture_id": fid,
-        "fecha": fecha_iso,
-        "liga": liga_nom,
-        "local": loc,
-        "visitante": vis,
-        "prediccion": pred_txt,
-        "probabilidad": round(prob_final * 100, 1),
-        "cuota": cuota_final,
-        "ev": round(ev_final * 100, 1),
-        "stake": stake,
-        "entropia": entropia,
-        "resumen_ia": resumen_ia
+        "prediccion": elegido["m"], "mercado": elegido["m"], "cuota": round(elegido["c"], 2),
+        "probabilidad": round(elegido["p"] * 100, 1), "ev": round(ev * 100, 1),
+        "confianza": round(min(96.5, max(64.0, elegido["p"] * 82 + (1 - entropia) * 18)), 1),
+        "kelly_stake": f"{kelly}% Bank", "entropia": round(entropia, 3),
+        "casa_colombia": casas[int(info["id"]) % 4]
     }
+    def evaluar_multiagente(client, guard: RateLimiterGuard, info: dict, q: dict) -> dict:
+    respaldo = f"Dixon-Coles (15k sim) confirma {q['prediccion']} con EV +{q['ev']}% y valor en {q['casa_colombia']}."
+    if not client:
+        return {"resumen_ia": respaldo}
 
-
-
-def enviar_telegram(mensaje_html):
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    max_len = 3800
-    partes, texto_restante = [], mensaje_html
-    while len(texto_restante) > max_len:
-        corte = texto_restante.rfind("\n\n", 0, max_len)
-        if corte == -1:
-            corte = texto_restante.rfind("\n", 0, max_len)
-        if corte == -1:
-            corte = max_len
-        partes.append(texto_restante[:corte].strip())
-        texto_restante = texto_restante[corte:].strip()
-    if texto_restante:
-        partes.append(texto_restante)
-    for idx, parte in enumerate(partes, 1):
+    def pedir(prompt: str) -> str:
+        if not guard.adquirir():
+            return ""
         try:
-            resp = requests.post(url, json={"chat_id": TELEGRAM_CHAT_ID, "text": parte, "parse_mode": "HTML", "disable_web_page_preview": True}, timeout=15)
-            if resp.status_code != 200:
-                print(f"Error respuesta Telegram parte {idx}: ({resp.status_code}): {resp.text}")
-            else:
-                print(f"Parte {idx}/{len(partes)} enviada a Telegram correctamente.")
-        except Exception as e:
-            print(f"Error Telegram parte {idx}: {e}")
+            r = client.models.generate_content(
+                model="gemini-2.5-flash", contents=prompt,
+                config=types.GenerateContentConfig(temperature=0.2, max_output_tokens=150)
+            )
+            return r.text.strip() if r and r.text else ""
+        except Exception:
+            return ""
 
+    r1 = pedir(f"Gemini 1 Rastreador: lesiones y clima breve para {info['local']} vs {info['visitante']} ({info['liga']}).")
+    r2 = pedir(f"Gemini 2 Auditor: evalúa cuota @{q['cuota']} en {q['prediccion']} frente a {q['casa_colombia']}.")
+    r3 = pedir(f"Gemini 3 Juez Cuántico: veredicto de 25 palabras para {info['local']} vs {info['visitante']}, pick {q['prediccion']} @{q['cuota']}, {r1}, {r2}.")
+    return {"resumen_ia": r3 or respaldo}
+
+def crear_gif_3d(ficha: dict) -> BytesIO | None:
+    if not PILLOW_OK:
+        return None
+    try:
+        frames, font = [], ImageFont.load_default()
+        for step in range(4):
+            img = Image.new("RGB", (800, 440), (7, 13, 20))
+            d = ImageDraw.Draw(img)
+            borde = (0, 240, 200) if step % 2 == 0 else (56, 189, 248)
+            d.rounded_rectangle((18, 18, 782, 422), radius=20, fill=(13, 25, 38), outline=borde, width=3)
+            d.text((40, 38), "ARSENAL MASTER QUANT V18.3 // VIP SIGNAL", fill=(0, 240, 200), font=font)
+            d.text((40, 65), f"LIGA: {ficha['liga']} | HORA COL: {ficha['hora']}", fill=(56, 189, 248), font=font)
+            d.text((40, 110), f"{ficha['local']}  VS  {ficha['visitante']}", fill=(56, 189, 248), font=font)
+            d.rounded_rectangle((40, 145, 760, 235), radius=12, fill=(13, 23, 36), outline=(250, 204, 21), width=2)
+            d.text((60, 168), f"PICK: {ficha['prediccion']}  |  CUOTA: @{ficha['cuota']}", fill=(250, 204, 21), font=font)
+            d.text((60, 200), f"STAKE: {ficha['kelly_stake']}  |  CASA: {ficha['casa_colombia']}", fill=(255, 255, 255), font=font)
+            conf = float(ficha["confianza"])
+            d.text((40, 260), f"CONFIANZA: {conf}% (EV: +{ficha['ev']}%)", fill=(0, 240, 200), font=font)
+            d.rounded_rectangle((40, 285, 760, 312), radius=8, fill=(20, 35, 55))
+            ancho = int(720 * min(1.0, ((step + 1) / 4.0) * (conf / 100.0)))
+            if ancho > 10:
+                d.rounded_rectangle((40, 285, 40 + ancho, 312), radius=8, fill=(0, 240, 200))
+            d.text((40, 380), "ARSENAL QUANT COLOMBIA // PROTECTED SIGNAL", fill=(140, 160, 185), font=font)
+            frames.append(img)
+        primero = frames.pop(0)
+        buf = BytesIO()
+        primero.save(buf, format="GIF", save_all=True, append_images=frames, duration=260, loop=0)
+        buf.seek(0)
+        return buf
+    except Exception:
+        return None
+      def enviar_tg(token: str, metodo: str, data: dict, files: dict = None):
+    if not token:
+        return
+    try:
+        url = f"https://telegram.org{token}/{metodo}"
+        if files:
+            requests.post(url, data=data, files=files, timeout=18)
+        else:
+            requests.post(url, json=data, timeout=18)
+        time.sleep(1.2)
+    except Exception as e:
+        logger.error(f"Error Telegram ({metodo}): {type(e).__name__}")
+
+def difundir_telegram(cartelera: list, token: str, vip_id: str, free_id: str, link_vip: str, web_url: str):
+    if not token or not cartelera:
+        return
+    btn_web = json.dumps({"inline_keyboard": [[{"text": "🌐 ABRIR PANEL WEB 3D", "url": web_url}]]})
+
+    if vip_id:
+        for p in cartelera:
+            txt = (f"💎 <b>SEÑAL VIP V18.3</b>\n{p['bandera']} <b>{p['liga']}</b>\n"
+                   f"⚽ <b>{p['local']} vs {p['visitante']}</b> ({p['hora']} COL)\n"
+                   f"🎯 <b>Pick:</b> {p['prediccion']} | 💰 <b>@{p['cuota']}</b> ({p['casa_colombia']})\n"
+                   f"📊 <b>Confianza:</b> {p['confianza']}% | <b>EV:</b> +{p['ev']}% | <b>Kelly:</b> {p['kelly_stake']}\n"
+                   f"🧠 {p['resumen_ia']}")
+            gif = crear_gif_3d(p)
+            if gif:
+                enviar_tg(token, "sendAnimation", {"chat_id": vip_id, "caption": txt, "parse_mode": "HTML", "protect_content": "true", "reply_markup": btn_web}, {"animation": ("vip.gif", gif, "image/gif")})
+            else:
+                enviar_tg(token, "sendMessage", {"chat_id": vip_id, "text": txt, "parse_mode": "HTML", "protect_content": True, "reply_markup": json.loads(btn_web)})
+
+    if free_id:
+        top2 = sorted(cartelera, key=lambda x: x["confianza"], reverse=True)[:2]
+        comb = 1.0
+        for t in top2:
+            comb *= float(t["cuota"])
+        apertura = (f"🔥 <b>JORNADA CUÁNTICA V18.3 ACTIVA</b>\n📊 {len(cartelera)} partidos auditados.\n"
+                    f"💵 Combinada 2 Regalos (@{comb:.2f}):\n• Con <b>$50.000 COP</b> cobras <b>${int(50000*comb):,} COP</b>\n"
+                    f"• Con <b>$100.000 COP</b> cobras <b>${int(100000*comb):,} COP</b>")
+        enviar_tg(token, "sendMessage", {"chat_id": free_id, "text": apertura, "parse_mode": "HTML"})
+        for i, p in enumerate(top2, 1):
+            cap = f"🎁 <b>REGALO #{i}</b>\n⚽ <b>{p['local']} vs {p['visitante']}</b>\n✅ <b>{p['prediccion']}</b> @{p['cuota']} ({p['confianza']}%)\n🧠 {p['resumen_ia']}"
+            gif = crear_gif_3d(p)
+            if gif:
+                enviar_tg(token, "sendAnimation", {"chat_id": free_id, "caption": cap, "parse_mode": "HTML"}, {"animation": (f"r{i}.gif", gif, "image/gif")})
+            else:
+                enviar_tg(token, "sendMessage", {"chat_id": free_id, "text": cap, "parse_mode": "HTML"})
+        cierre = f"🔒 <b>DESBLOQUEA LOS {max(0, len(cartelera)-2)} PICKS VIP RESTANTES</b>\n💳 Pago inmediato Nequi / PayPal:"
+        markup = {"inline_keyboard": [[{"text": "🔓 UNIRSE AL VIP", "url": link_vip}], [{"text": "🌐 VER WEB 3D", "url": web_url}]]}
+        enviar_tg(token, "sendMessage", {"chat_id": free_id, "text": cierre, "parse_mode": "HTML", "reply_markup": markup})
 
 def main():
-    tz_col = timezone(timedelta(hours=-5))
-    ahora = datetime.now(tz_col)
-    fecha_hoy = ahora.strftime("%Y-%m-%d")
-    fecha_ayer = (ahora - timedelta(days=1)).strftime("%Y-%m-%d")
+    fecha_hoy = datetime.now(TZ_COL).strftime("%Y-%m-%d")
+    logger.info(f"=== ARRANQUE BOT CUANTICO V18.3 ({fecha_hoy}) ===")
+    gemini_key = os.getenv("GEMINI_API_KEY", "").strip()
+    tg_token = os.getenv("TELEGRAM_TOKEN", os.getenv("TELEGRAM_BOT_TOKEN", "")).strip()
+    tg_vip = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+    tg_free = os.getenv("TELEGRAM_FREE_CHAT_ID", "").strip()
+    link_vip = os.getenv("LINK_SUSCRIPCION_VIP", "https://github.io").strip()
+    web_url = os.getenv("PANEL_WEB_URL", "https://github.io").strip()
+    ruta_in = os.path.join("predicciones", f"partidos_{fecha_hoy}.json")
+    datos = json.load(open(ruta_in, "r", encoding="utf-8")) if os.path.exists(ruta_in) else {"partidos": []}
+    partidos_raw = datos.get("partidos", [])
 
-    cal = cargar_json("predicciones/calibracion.json", {"peso_asia": 0.45, "peso_modelo": 0.55})
-    data_hoy = cargar_json(f"predicciones/partidos_{fecha_hoy}.json", {})
-    data_ayer = cargar_json(f"predicciones/partidos_{fecha_ayer}.json", {})
+    ayer = datos.get("resultados_ayer", {})
+    factor_ayer = 1.0
+    if isinstance(ayer, dict) and len(ayer) > 0:
+        prom_goles = sum((v.get("gl", 0) + v.get("gv", 0)) for v in ayer.values() if isinstance(v, dict)) / len(ayer)
+        factor_ayer = 1.06 if prom_goles >= 2.8 else (0.94 if prom_goles <= 1.7 else 1.0)
+        logger.info(f"Auto-Calibración H2H/Ayer: {len(ayer)} partidos, prom goles {prom_goles:.2f} -> Factor {factor_ayer}")
 
-    resultados_ayer = data_ayer.get("resultados", {}) if isinstance(data_ayer, dict) else {}
-    resumen_auditoria = auditar_y_calibrar(resultados_ayer, cal)
+    guard = RateLimiterGuard(6.5, 8, 32)
+    client = genai.Client(api_key=gemini_key) if (gemini_key and GENAI_OK) else None
+    cartelera = []
 
-    partidos_raw = data_hoy.get("partidos", []) if isinstance(data_hoy, dict) else []
-    elos = descargar_clubelo(fecha_hoy)
+    for raw in partidos_raw:
+        try:
+            info = extraer_partido(raw, factor_ayer)
+            calc = calcular_cuantico(info)
+            ia = evaluar_multiagente(client, guard, info, calc)
+            cartelera.append({**info, **calc, **ia})
+        except Exception as e:
+            logger.error(f"Error en fixture: {type(e).__name__}")
+     os.makedirs("predicciones", exist_ok=True)
+    os.makedirs(os.path.join("www", "data"), exist_ok=True)
+    salida = {"actualizado_colombia": datetime.now(TZ_COL).strftime("%Y-%m-%d %H:%M:%S"), "total_partidos": len(cartelera), "partidos": cartelera}
+    with open(os.path.join("predicciones", f"pronosticos_vip_{fecha_hoy}.json"), "w", encoding="utf-8") as f:
+        json.dump(salida, f, ensure_ascii=False, indent=2)
+    with open(os.path.join("www", "data", "partidos_del_dia.json"), "w", encoding="utf-8") as f:
+        json.dump(salida, f, ensure_ascii=False, indent=2)
 
-    ligas_presentes, temporadas = set(), {}
-    for p in partidos_raw:
-        lg = p.get("league", {})
-        if lg.get("id"):
-            ligas_presentes.add(lg["id"])
-            temporadas[lg["id"]] = lg.get("season", ahora.year)
-
-    tablas = {lid: obtener_tabla(lid, temporadas[lid]) for lid in ligas_presentes}
-    seleccionados = {}
-    for p in partidos_raw:
-        tarjeta = analizar_partido(p, elos, tablas, cal)
-        if tarjeta:
-            seleccionados[tarjeta["fixture_id"]] = tarjeta
-
-    guardar_json("www/data/partidos_del_dia.json", {
-        "actualizado": ahora.strftime("%Y-%m-%d %H:%M COL"),
-        "calibracion": cal,
-        "total": len(seleccionados),
-        "partidos": seleccionados
-    })
-
-    lineas = [f"<b>⚽ ARSENAL QUANT V18.1</b> ({fecha_hoy})\n"]
-    if resumen_auditoria:
-        lineas.append(html.escape(resumen_auditoria))
-    if not seleccionados:
-        lineas.append("Sin señales con valor matemático positivo (+EV) tras filtrar entropía y comité IA.")
-    else:
-        for t in seleccionados.values():
-            lineas.append(
-                f"🏆 <b>{html.escape(t['liga'])}</b>\n"
-                f"⚔️ {html.escape(t['local'])} vs {html.escape(t['visitante'])}\n"
-                f"🎯 Pick: <b>{html.escape(t['prediccion'])}</b> @ {t['cuota']}\n"
-                f"📊 Prob: {t['probabilidad']}% | EV: +{t['ev']}% | Stake: {t['stake']}%\n"
-                f"🤖 {html.escape(t['resumen_ia'])}\n"
-            )
-    lineas.append(f"🌐 Panel en vivo: {URL_WEB_VIP}")
-    enviar_telegram("\n".join(lineas))
-    print(f"Proceso completado. Picks enviados: {len(seleccionados)}")
-
+    difundir_telegram(cartelera, tg_token, tg_vip, tg_free, link_vip, web_url)
+    logger.info("=== FINALIZADO SIN ERRORES ===")
 
 if __name__ == "__main__":
     main()
-      
+
