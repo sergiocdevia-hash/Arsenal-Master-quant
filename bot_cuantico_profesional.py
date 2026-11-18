@@ -225,7 +225,7 @@ def crear_gif_3d(ficha: dict) -> BytesIO | None:
         return buf
     except Exception:
         return None
-      def enviar_tg(token: str, metodo: str, data: dict, files: dict = None):
+def enviar_tg(token: str, metodo: str, data: dict, files: dict = None):
     if not token:
         return
     try:
