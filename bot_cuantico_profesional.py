@@ -308,7 +308,7 @@ def main():
             cartelera.append({**info, **calc, **ia})
         except Exception as e:
             logger.error(f"Error en fixture: {type(e).__name__}")
-     os.makedirs("predicciones", exist_ok=True)
+         os.makedirs("predicciones", exist_ok=True)
     os.makedirs(os.path.join("www", "data"), exist_ok=True)
     salida = {"actualizado_colombia": datetime.now(TZ_COL).strftime("%Y-%m-%d %H:%M:%S"), "total_partidos": len(cartelera), "partidos": cartelera}
     with open(os.path.join("predicciones", f"pronosticos_vip_{fecha_hoy}.json"), "w", encoding="utf-8") as f:
@@ -321,4 +321,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
 
