@@ -155,7 +155,7 @@ def extraer_partido(raw: dict, factor_ayer: float = 1.0) -> dict:
         "xg_visita": max(0.40, min(2.90, xg_v)),
         "cuotas": cuotas
             }
-    def calcular_cuantico(info: dict) -> dict:
+def calcular_cuantico(info: dict) -> dict:
     lmbda = info["xg_local"]
     mu = info["xg_visita"]
     cuotas = info["cuotas"]
