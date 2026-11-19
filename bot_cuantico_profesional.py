@@ -400,8 +400,8 @@ def difundir_telegram(cartelera: list, token: str, vip_id: str, free_id: str, li
         )
         markup_cierre = {
             "inline_keyboard": [
-                [{"text": "💎 UNIRSE AL VIP", "url": link_vip}],
-                [{"text": "🌐 VER WEB 3D", "url": web_url}]
+                [{"text": "💎 UNIRSE AL VIP", "url": link_vip}]
+                
             ]
         }
         enviar_tg(
