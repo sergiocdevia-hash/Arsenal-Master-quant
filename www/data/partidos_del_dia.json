@@ -1,5 +1,5 @@
 {
-  "actualizado_colombia": "2026-11-18 23:03:20",
+  "actualizado_colombia": "2026-11-18 23:22:23",
   "total_partidos": 10,
   "partidos": [
     {
@@ -23,11 +23,11 @@
       "mercado": "X2 (Doble Oportunidad)",
       "cuota": 1.31,
       "probabilidad": 76.1,
-      "ev": -0.4,
+      "ev": -0.3,
       "confianza": 64.0,
       "kelly_stake": "1.5% Bank",
-      "casa_colombia": "Codere",
-      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-0.4% y valor en Codere."
+      "casa_colombia": "BetPlay",
+      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-0.3% y valor en BetPlay."
     },
     {
       "id": 1492456,
@@ -49,12 +49,12 @@
       "prediccion": "1X (Doble Oportunidad)",
       "mercado": "1X (Doble Oportunidad)",
       "cuota": 1.13,
-      "probabilidad": 88.4,
-      "ev": -0.1,
-      "confianza": 76.8,
+      "probabilidad": 88.7,
+      "ev": 0.3,
+      "confianza": 77.2,
       "kelly_stake": "1.5% Bank",
-      "casa_colombia": "Codere",
-      "resumen_ia": "Dixon-Coles (15k sim) confirma 1X (Doble Oportunidad) con EV +-0.1% y valor en Codere."
+      "casa_colombia": "RushBet",
+      "resumen_ia": "Dixon-Coles (15k sim) confirma 1X (Doble Oportunidad) con EV +0.3% y valor en RushBet."
     },
     {
       "id": 1492452,
@@ -73,15 +73,15 @@
         "2": 2.63,
         "Over2.5": 1.78
       },
-      "prediccion": "X (Empate)",
-      "mercado": "X (Empate)",
-      "cuota": 3.56,
-      "probabilidad": 29.8,
-      "ev": 5.9,
+      "prediccion": "1X (Doble Oportunidad)",
+      "mercado": "1X (Doble Oportunidad)",
+      "cuota": 1.52,
+      "probabilidad": 65.7,
+      "ev": -0.2,
       "confianza": 64.0,
       "kelly_stake": "1.5% Bank",
-      "casa_colombia": "Wplay",
-      "resumen_ia": "Dixon-Coles (15k sim) confirma X (Empate) con EV +5.9% y valor en Wplay."
+      "casa_colombia": "BetPlay",
+      "resumen_ia": "Dixon-Coles (15k sim) confirma 1X (Doble Oportunidad) con EV +-0.2% y valor en BetPlay."
     },
     {
       "id": 1492453,
@@ -102,13 +102,13 @@
       },
       "prediccion": "1X (Doble Oportunidad)",
       "mercado": "1X (Doble Oportunidad)",
-      "cuota": 1.09,
-      "probabilidad": 92.0,
-      "ev": 0.3,
-      "confianza": 82.1,
+      "cuota": 1.08,
+      "probabilidad": 92.3,
+      "ev": -0.3,
+      "confianza": 82.4,
       "kelly_stake": "1.5% Bank",
       "casa_colombia": "Codere",
-      "resumen_ia": "Dixon-Coles (15k sim) confirma 1X (Doble Oportunidad) con EV +0.3% y valor en Codere."
+      "resumen_ia": "Dixon-Coles (15k sim) confirma 1X (Doble Oportunidad) con EV +-0.3% y valor en Codere."
     },
     {
       "id": 1644369,
@@ -133,12 +133,12 @@
       "prediccion": "X2 (Doble Oportunidad)",
       "mercado": "X2 (Doble Oportunidad)",
       "cuota": 1.36,
-      "probabilidad": 69.8,
-      "ev": -5.0,
+      "probabilidad": 70.3,
+      "ev": -4.4,
       "confianza": 64.0,
       "kelly_stake": "1.5% Bank",
-      "casa_colombia": "RushBet",
-      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-5.0% y valor en RushBet."
+      "casa_colombia": "Codere",
+      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-4.4% y valor en Codere."
     },
     {
       "id": 1644384,
@@ -163,12 +163,12 @@
       "prediccion": "X2 (Doble Oportunidad)",
       "mercado": "X2 (Doble Oportunidad)",
       "cuota": 1.12,
-      "probabilidad": 85.7,
-      "ev": -4.1,
-      "confianza": 73.4,
+      "probabilidad": 85.0,
+      "ev": -4.7,
+      "confianza": 72.9,
       "kelly_stake": "1.5% Bank",
-      "casa_colombia": "Wplay",
-      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-4.1% y valor en Wplay."
+      "casa_colombia": "RushBet",
+      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-4.7% y valor en RushBet."
     },
     {
       "id": 1644334,
@@ -193,12 +193,12 @@
       "prediccion": "X2 (Doble Oportunidad)",
       "mercado": "X2 (Doble Oportunidad)",
       "cuota": 1.12,
-      "probabilidad": 85.6,
-      "ev": -4.1,
-      "confianza": 73.4,
+      "probabilidad": 85.3,
+      "ev": -4.5,
+      "confianza": 73.2,
       "kelly_stake": "1.5% Bank",
-      "casa_colombia": "RushBet",
-      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-4.1% y valor en RushBet."
+      "casa_colombia": "Wplay",
+      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-4.5% y valor en Wplay."
     },
     {
       "id": 1644346,
@@ -223,12 +223,12 @@
       "prediccion": "X2 (Doble Oportunidad)",
       "mercado": "X2 (Doble Oportunidad)",
       "cuota": 1.2,
-      "probabilidad": 83.2,
-      "ev": -0.2,
-      "confianza": 70.5,
+      "probabilidad": 83.8,
+      "ev": 0.6,
+      "confianza": 71.1,
       "kelly_stake": "1.5% Bank",
-      "casa_colombia": "RushBet",
-      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-0.2% y valor en RushBet."
+      "casa_colombia": "Wplay",
+      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +0.6% y valor en Wplay."
     },
     {
       "id": 1644353,
@@ -253,12 +253,12 @@
       "prediccion": "X2 (Doble Oportunidad)",
       "mercado": "X2 (Doble Oportunidad)",
       "cuota": 1.4,
-      "probabilidad": 65.8,
-      "ev": -7.9,
+      "probabilidad": 65.6,
+      "ev": -8.2,
       "confianza": 64.0,
       "kelly_stake": "1.5% Bank",
-      "casa_colombia": "BetPlay",
-      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-7.9% y valor en BetPlay."
+      "casa_colombia": "Codere",
+      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-8.2% y valor en Codere."
     },
     {
       "id": 1644373,
@@ -283,12 +283,12 @@
       "prediccion": "X2 (Doble Oportunidad)",
       "mercado": "X2 (Doble Oportunidad)",
       "cuota": 1.25,
-      "probabilidad": 78.6,
-      "ev": -1.8,
-      "confianza": 65.6,
+      "probabilidad": 78.2,
+      "ev": -2.2,
+      "confianza": 65.3,
       "kelly_stake": "1.5% Bank",
       "casa_colombia": "Wplay",
-      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-1.8% y valor en Wplay."
+      "resumen_ia": "Dixon-Coles (15k sim) confirma X2 (Doble Oportunidad) con EV +-2.2% y valor en Wplay."
     }
   ]
 }
