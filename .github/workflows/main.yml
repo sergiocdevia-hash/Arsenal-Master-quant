@@ -35,13 +35,14 @@ jobs:
         run: |
           python motor_api_real.py
 
-      - name: 2. Ejecutar Cerebro v18.3 y Enviar a Telegram
+      - name: 2. Ejecutar Cerebro V18.3 y Enviar a Telegram
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           TELEGRAM_FREE_CHAT_ID: ${{ secrets.TELEGRAM_FREE_CHAT_ID }}
           LINK_SUSCRIPCION_VIP: ${{ secrets.LINK_SUSCRIPCION_VIP }}
+          PANEL_WEB_URL: ${{ secrets.PANEL_WEB_URL }}
         run: |
           python bot_cuantico_profesional.py
 
@@ -55,3 +56,4 @@ jobs:
             git pull --rebase --autostash origin main || true
             git push
           fi
+          
