@@ -238,7 +238,7 @@ def evaluar_multiagente(client, guard: RateLimiterGuard, info: dict, q: dict) ->
             return ""
         try:
             r = client.models.generate_content(
-                model="gemini-2.0-flash",
+                model="gemini-2.5-flash",
                 contents=prompt,
                 config=types.GenerateContentConfig(temperature=0.2, max_output_tokens=150)
             )
@@ -291,7 +291,7 @@ def enviar_tg(token: str, metodo: str, data: dict, files: dict = None):
     if not token:
         return
     try:
-        url = f"https://telegram.org{token}/{metodo}"
+        url = f"https://api.telegram.org/bot{token}/{metodo}"
         if files:
             resp = requests.post(url, data=data, files=files, timeout=18)
         else:
